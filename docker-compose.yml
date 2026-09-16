@@ -1,0 +1,45 @@
+version: "3.9"
+
+# Deploy shape from spec section 15/19: frontend as static files behind
+# nginx, FastAPI backend, Postgres+pgvector. Split for local dev — run the
+# frontend with `npm run dev` instead of the `frontend` service below —
+# this compose file is aimed at a self-hosted or single-VM deployment.
+
+services:
+  db:
+    image: pgvector/pgvector:pg16
+    restart: unless-stopped
+    environment:
+      POSTGRES_USER: hamza
+      POSTGRES_PASSWORD: hamza
+      POSTGRES_DB: hamza_ai
+    volumes:
+      - pgdata:/var/lib/postgresql/data
+      - ./backend/app/db/schema.sql:/docker-entrypoint-initdb.d/schema.sql:ro
+    ports:
+      - "5432:5432"
+
+  backend:
+    build: ./backend
+    restart: unless-stopped
+    env_file:
+      - ./backend/.env
+    environment:
+      DATABASE_URL: postgresql+asyncpg://hamza:hamza@db:5432/hamza_ai
+    depends_on:
+      - db
+    ports:
+      - "8000:8000"
+
+  frontend:
+    build:
+      context: ./frontend
+      dockerfile: Dockerfile
+    restart: unless-stopped
+    depends_on:
+      - backend
+    ports:
+      - "8080:80"
+
+volumes:
+  pgdata:

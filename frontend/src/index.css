@@ -1,0 +1,97 @@
+@import url('https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@300;400;500;600;700&family=JetBrains+Mono:wght@300;400;500&display=swap');
+
+:root {
+  color-scheme: dark;
+  --bg: #030405;
+  --bg-deep: #000000;
+  --cyan: #5fd8ff;
+  --cyan-dim: #2a6b7f;
+  --orange: #ff8a3d;
+  --orange-hot: #ffd08a;
+  --gold: #ffb454;
+  --ink: #eef4f6;
+  --ink-dim: #7d9099;
+  --line: rgba(95, 216, 255, 0.14);
+}
+
+* {
+  box-sizing: border-box;
+}
+
+html,
+body,
+#root {
+  height: 100%;
+  margin: 0;
+  padding: 0;
+  background: var(--bg);
+  overscroll-behavior: none;
+}
+
+body {
+  font-family: 'Space Grotesk', 'Inter', system-ui, sans-serif;
+  color: var(--ink);
+  -webkit-font-smoothing: antialiased;
+  overflow: hidden;
+  touch-action: none;
+}
+
+canvas {
+  display: block;
+  touch-action: none;
+}
+
+.mono {
+  font-family: 'JetBrains Mono', ui-monospace, monospace;
+}
+
+::selection {
+  background: rgba(255, 138, 61, 0.35);
+  color: #fff;
+}
+
+button {
+  font-family: inherit;
+}
+
+/* subtle film-grain / vignette overlay to keep the whole thing cinematic rather than flat webgl */
+.vignette {
+  position: fixed;
+  inset: 0;
+  pointer-events: none;
+  z-index: 40;
+  background: radial-gradient(ellipse at center, transparent 45%, rgba(0, 0, 0, 0.55) 100%);
+}
+
+.grain {
+  position: fixed;
+  inset: 0;
+  pointer-events: none;
+  z-index: 41;
+  opacity: 0.035;
+  mix-blend-mode: overlay;
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='120' height='120'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='2' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E");
+}
+
+a {
+  color: inherit;
+}
+
+/* MinimalHUD: title + nav share one flex row on desktop; on narrow phones
+   there isn't room for both, so the nav drops to its own line beneath. */
+.hud-top {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  gap: 12px;
+  flex-wrap: wrap;
+}
+
+@media (max-width: 480px) {
+  .hud-top {
+    flex-direction: column;
+  }
+  .hud-nav {
+    align-self: flex-start;
+  }
+}

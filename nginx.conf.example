@@ -1,0 +1,28 @@
+# Example reverse proxy for a self-hosted deployment: serves the built
+# frontend statically and proxies /api + /ws to the FastAPI backend.
+# Copy to your server's nginx sites-available and adjust server_name/paths.
+
+server {
+    listen 80;
+    server_name hamza.example.com;
+
+    root /var/www/hamza-ai-interface/dist;
+    index index.html;
+
+    location / {
+        try_files $uri /index.html;
+    }
+
+    location /api/ {
+        proxy_pass http://127.0.0.1:8000;
+        proxy_set_header Host $host;
+        proxy_set_header X-Real-IP $remote_addr;
+    }
+
+    location /ws/ {
+        proxy_pass http://127.0.0.1:8000;
+        proxy_http_version 1.1;
+        proxy_set_header Upgrade $http_upgrade;
+        proxy_set_header Connection "upgrade";
+    }
+}

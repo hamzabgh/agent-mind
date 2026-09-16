@@ -1,0 +1,3552 @@
+<!DOCTYPE html>
+<html lang="en" class="dark">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>FAMASSER Intelligence — Fami</title>
+
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+
+<script src="https://cdn.tailwindcss.com"></script>
+<script>
+tailwind.config = {
+  darkMode: 'class',
+  theme: {
+    extend: {
+      fontFamily: {
+        sans: ['Inter', 'system-ui', 'sans-serif'],
+        mono: ['JetBrains Mono', 'ui-monospace', 'monospace'],
+      },
+      colors: {
+        fam: {
+          50:'#f0fdfa',100:'#ccfbf1',200:'#99f6e4',300:'#5eead4',400:'#2dd4bf',
+          500:'#14b8a6',600:'#0d9488',700:'#0f766e',800:'#115e59',900:'#134e4a',950:'#042f2e',
+        },
+        ink: { 900:'#071311', 850:'#0a1a17', 800:'#0D1B19', 700:'#132824' },
+      },
+      keyframes: {
+        msgIn:      { '0%':{opacity:'0',transform:'translateY(10px) scale(.99)'}, '100%':{opacity:'1',transform:'translateY(0) scale(1)'} },
+        overlayIn:  { '0%':{opacity:'0',transform:'scale(.97)'}, '100%':{opacity:'1',transform:'scale(1)'} },
+        blob:       { '0%,100%':{transform:'translate(0,0) scale(1)'}, '50%':{transform:'translate(24px,-24px) scale(1.07)'} },
+        bounceDot:  { '0%,80%,100%':{transform:'translateY(0)',opacity:'.35'}, '40%':{transform:'translateY(-5px)',opacity:'1'} },
+        faceBreath: { '0%,100%':{filter:'drop-shadow(0 0 6px rgba(45,212,191,.30))'}, '50%':{filter:'drop-shadow(0 0 15px rgba(45,212,191,.65))'} },
+        faceSpeak:  { '0%,100%':{filter:'drop-shadow(0 0 9px rgba(45,212,191,.5))'}, '50%':{filter:'drop-shadow(0 0 20px rgba(45,212,191,.9))'} },
+        faceErr:    { '0%,100%':{filter:'drop-shadow(0 0 5px rgba(244,63,94,.3))'}, '50%':{filter:'drop-shadow(0 0 12px rgba(244,63,94,.55))'} },
+        famiBlink:  { '0%,93%,100%':{transform:'scaleY(1)'}, '96%':{transform:'scaleY(.1)'} },
+        famiScan:   { '0%,100%':{transform:'translateX(0)'}, '30%':{transform:'translateX(3.4px)'}, '70%':{transform:'translateX(-3.4px)'} },
+        famiCore:   { '0%,100%':{opacity:'.3',transform:'scale(.75)'}, '50%':{opacity:'1',transform:'scale(1.35)'} },
+        famiTalk:   { '0%,100%':{transform:'scaleY(1)'}, '50%':{transform:'scaleY(1.9)'} },
+        float:      { '0%,100%':{transform:'translateY(0)'}, '50%':{transform:'translateY(-7px)'} },
+        progressStrip: { '0%':{transform:'translateX(-100%)'}, '100%':{transform:'translateX(100%)'} },
+        recPulse:   { '0%,100%':{boxShadow:'0 0 0 0 rgba(244,63,94,.5)'}, '50%':{boxShadow:'0 0 0 8px rgba(244,63,94,0)'} },
+        stepIn:     { '0%':{opacity:'0',transform:'translateX(-6px)'}, '100%':{opacity:'1',transform:'translateX(0)'} },
+        shake:      { '0%,100%':{transform:'translateX(0)'}, '20%':{transform:'translateX(-4px)'}, '40%':{transform:'translateX(4px)'}, '60%':{transform:'translateX(-3px)'}, '80%':{transform:'translateX(3px)'} },
+        popIn:      { '0%':{opacity:'0',transform:'scale(.92) translateY(6px)'}, '100%':{opacity:'1',transform:'scale(1) translateY(0)'} },
+      },
+      animation: {
+        msgIn:'msgIn .32s cubic-bezier(.22,1,.36,1) both',
+        overlayIn:'overlayIn .22s cubic-bezier(.22,1,.36,1) both',
+        blob:'blob 26s ease-in-out infinite',
+        float:'float 4.5s ease-in-out infinite',
+        recPulse:'recPulse 1.4s ease-in-out infinite',
+      },
+    },
+  },
+};
+</script>
+
+<style>
+  html, body { height: 100%; }
+  body { -webkit-font-smoothing: antialiased; }
+  ::selection { background: rgba(20,184,166,.25); }
+
+  ::-webkit-scrollbar { width: 10px; height: 10px; }
+  ::-webkit-scrollbar-track { background: transparent; }
+  ::-webkit-scrollbar-thumb { background: rgba(113,113,122,.22); border-radius: 999px; border: 3px solid transparent; background-clip: content-box; }
+  ::-webkit-scrollbar-thumb:hover { background: rgba(113,113,122,.45); background-clip: content-box; }
+
+  #sidebarWrap.sidebar-collapsed { width: 0 !important; }
+  body.zen #sidebarWrap { display: none; }
+  body.zen #hdrNav, body.zen #hdrTools { display: none; }
+  body.zen #zenExit { display: grid; }
+  #zenExit { display: none; }
+
+  /* ══ FAMI — human-like character (sclera eyes, brows, hair, ears, earpiece) ══ */
+.fami-face { display:block; overflow:visible; }
+.fami-face .fami-head { transform-box: fill-box; transform-origin: 50% 82%; }
+.fami-face .fami-eye, .fami-face .fami-pupil, .fami-face .fami-brow, .fami-face .fami-cheek,
+.fami-face .fami-mouth, .fami-face .fami-eye-happy, .fami-face .fami-hair, .fami-face .fami-core { transform-box: fill-box; transform-origin: center; }
+.fami-face .fami-brow-l { transform-origin: 78% 50%; }
+.fami-face .fami-brow-r { transform-origin: 22% 50%; }
+.fami-face .fami-mouth-open { transform-origin: 50% 25%; }
+
+.fami-face .fami-mouth-open, .fami-face .fami-mouth-big, .fami-face .fami-mouth-flat,
+.fami-face .fami-mouth-hmm, .fami-face .fami-mouth-frown,
+.fami-face .fami-eye-happy, .fami-face .fami-sweat { opacity: 0; }
+
+.fami-face.idle      { animation: hfGlow 3.8s ease-in-out infinite; }
+.fami-face.idle .fami-head   { animation: hfBreath 4.2s ease-in-out infinite; }
+.fami-face.idle .fami-eye    { animation: hfBlink 4.8s ease-in-out infinite; }
+.fami-face.idle .fami-pupil  { animation: hfGlance 9s ease-in-out infinite; }
+.fami-face.idle .fami-brow   { animation: hfBrowWiggle 7.5s ease-in-out infinite; }
+.fami-face.idle .fami-core   { animation: hfCore 2.6s ease-in-out infinite; }
+
+.fami-face.listening      { animation: hfGlowListen 1.1s ease-in-out infinite; }
+.fami-face.listening .fami-head   { animation: hfBreath 2.1s ease-in-out infinite; }
+.fami-face.listening .fami-eye    { animation: hfBlink 5.5s ease-in-out infinite; }
+.fami-face.listening .fami-pupil  { animation: hfGlance 4.5s ease-in-out infinite; }
+.fami-face.listening .fami-brow   { transform: translateY(-1.1px); }
+.fami-face.listening .fami-core   { animation: hfCore .85s ease-in-out infinite; }
+
+.fami-face.scanning      { animation: hfGlow 1.5s ease-in-out infinite; }
+.fami-face.scanning .fami-head   { animation: hfScanTilt 2.4s ease-in-out infinite; }
+.fami-face.scanning .fami-eye    { animation: hfBlink 3.8s ease-in-out infinite; }
+.fami-face.scanning .fami-pupil  { animation: hfLookSide 1.1s ease-in-out infinite; }
+.fami-face.scanning .fami-brow-r { transform: translateY(-1.9px); }
+.fami-face.scanning .fami-core   { animation: hfCore 1.2s ease-in-out infinite; }
+
+.fami-face.building      { animation: hfGlow 1.5s ease-in-out infinite; }
+.fami-face.building .fami-head   { animation: hfThink 2.6s ease-in-out infinite; }
+.fami-face.building .fami-pupil  { animation: hfLookUp 2.6s ease-in-out infinite; }
+.fami-face.building .fami-brow   { animation: hfThinkBrow 2.2s ease-in-out infinite; }
+.fami-face.building .fami-mouth-smile { opacity: 0; }
+.fami-face.building .fami-mouth-hmm   { opacity: 1; }
+.fami-face.building .fami-core   { animation: hfCore .9s ease-in-out infinite; }
+
+.fami-face.executing      { animation: hfGlowSpeak 1.5s ease-in-out infinite; }
+.fami-face.executing .fami-head   { animation: hfFocus 1.6s ease-in-out infinite; }
+.fami-face.executing .fami-eye    { animation: hfBlink 2.8s ease-in-out infinite; }
+.fami-face.executing .fami-brow-l { transform: rotate(-6deg) translateY(.8px); }
+.fami-face.executing .fami-brow-r { transform: rotate(6deg) translateY(.8px); }
+.fami-face.executing .fami-mouth-smile { opacity: 0; }
+.fami-face.executing .fami-mouth-flat  { opacity: 1; }
+.fami-face.executing .fami-core   { animation: hfCore .6s ease-in-out infinite; }
+
+.fami-face.speaking      { animation: hfGlowSpeak 1.5s ease-in-out infinite; }
+.fami-face.speaking .fami-head   { animation: hfTalkHead .9s ease-in-out infinite; }
+.fami-face.speaking .fami-eye    { animation: hfBlink 3.2s ease-in-out infinite; }
+.fami-face.speaking .fami-pupil  { animation: hfGlance 6s ease-in-out infinite; }
+.fami-face.speaking .fami-brow   { animation: hfBrowTalk 1.8s ease-in-out infinite; }
+.fami-face.speaking .fami-mouth-smile { opacity: 0; }
+.fami-face.speaking .fami-mouth-open  { opacity: 1; animation: hfTalk .42s ease-in-out infinite; }
+.fami-face.speaking .fami-core   { animation: hfCore 1.4s ease-in-out infinite; }
+
+.fami-face.success      { animation: hfGlowSpeak 1.5s ease-in-out infinite; }
+.fami-face.success .fami-head   { animation: hfNodYes 1.2s cubic-bezier(.34,1.3,.64,1) 1; }
+.fami-face.success .fami-eye    { opacity: 0; }
+.fami-face.success .fami-eye-happy { opacity: 1; }
+.fami-face.success .fami-brow   { transform: translateY(-1.4px); }
+.fami-face.success .fami-mouth-smile { opacity: 0; }
+.fami-face.success .fami-mouth-big   { opacity: 1; }
+.fami-face.success .fami-cheek  { opacity: .5; }
+.fami-face.success .fami-core   { animation: hfCore 1s ease-in-out infinite; }
+
+.fami-face.error      { animation: hfGlowErr 2.4s ease-in-out infinite; }
+.fami-face.error .fami-head   { animation: hfWorry 2.8s ease-in-out infinite; }
+.fami-face.error .fami-eye    { transform: scaleY(.84); animation: hfBlink 5.5s ease-in-out infinite; }
+.fami-face.error .fami-brow-l { transform: rotate(8deg) translateY(-2px); }
+.fami-face.error .fami-brow-r { transform: rotate(-8deg) translateY(-2px); }
+.fami-face.error .fami-mouth-smile { opacity: 0; }
+.fami-face.error .fami-mouth-frown { opacity: 1; }
+.fami-face.error .fami-sweat  { opacity: 1; animation: hfSweat 2.2s ease-in infinite; }
+.fami-face.error .fami-core   { animation: hfCore 2s ease-in-out infinite; }
+
+/* Personality touch: the two eyes blink slightly out of sync — perfectly
+   mirrored blinking reads as robotic, a tiny offset reads as alive. */
+.fami-face .fami-eye:nth-of-type(2) { animation-delay: .3s !important; }
+
+@keyframes hfGlow {
+  0%,100% { filter: drop-shadow(0 0 8px rgba(129,140,248,.35)); }
+  50%     { filter: drop-shadow(0 0 18px rgba(139,92,246,.65)); }
+}
+@keyframes hfGlowSpeak {
+  0%,100% { filter: drop-shadow(0 0 11px rgba(94,234,212,.55)); }
+  50%     { filter: drop-shadow(0 0 24px rgba(139,92,246,.9)); }
+}
+@keyframes hfGlowErr {
+  0%,100% { filter: drop-shadow(0 0 5px rgba(251,113,133,.3)); }
+  50%     { filter: drop-shadow(0 0 13px rgba(251,113,133,.55)); }
+}
+@keyframes hfGlowListen {
+  0%,100% { filter: drop-shadow(0 0 10px rgba(56,189,248,.45)); }
+  50%     { filter: drop-shadow(0 0 22px rgba(56,189,248,.85)); }
+}
+@keyframes hfBreath {
+  0%,100% { transform: rotate(0deg) translateY(0); }
+  50%     { transform: rotate(.9deg) translateY(-.7px); }
+}
+@keyframes hfBlink {
+  0%,93%,100% { transform: scaleY(1); }
+  96%         { transform: scaleY(.08); }
+}
+@keyframes hfGlance {
+  0%,86%,100% { transform: translate(0,0); }
+  90%  { transform: translate(2.3px,-.5px); }
+  94%  { transform: translate(-1.7px,0); }
+  97%  { transform: translate(.6px,0); }
+}
+@keyframes hfBrowWiggle {
+  0%,90%,100% { transform: translateY(0); }
+  93%  { transform: translateY(-1.9px); }
+  96%  { transform: translateY(0); }
+}
+@keyframes hfScanTilt {
+  0%,100% { transform: rotate(0deg); }
+  50%     { transform: rotate(-2.6deg); }
+}
+@keyframes hfLookSide {
+  0%,100% { transform: translate(0,0); }
+  30%     { transform: translate(2.6px,0); }
+  70%     { transform: translate(-2.6px,0); }
+}
+@keyframes hfThink {
+  0%,100% { transform: rotate(0deg) translateY(0); }
+  40%     { transform: rotate(-2.8deg) translateY(-1.1px); }
+  72%     { transform: rotate(1.2deg) translateY(0); }
+}
+@keyframes hfLookUp {
+  0%,100% { transform: translate(0,0); }
+  42%,62% { transform: translate(1.5px,-1.6px); }
+}
+@keyframes hfThinkBrow {
+  0%,100% { transform: translateY(0); }
+  40%     { transform: translateY(-1.7px); }
+  74%     { transform: translateY(.7px); }
+}
+@keyframes hfFocus {
+  0%,100% { transform: scale(1); }
+  50%     { transform: scale(1.014) translateY(.5px); }
+}
+@keyframes hfTalkHead {
+  0%,100% { transform: rotate(0deg); }
+  25%     { transform: rotate(1.3deg); }
+  75%     { transform: rotate(-1.3deg); }
+}
+@keyframes hfBrowTalk {
+  0%,100% { transform: translateY(0) rotate(0deg); }
+  50%     { transform: translateY(-1.1px) rotate(1deg); }
+}
+@keyframes hfTalk {
+  0%,100% { transform: scaleY(.5); }
+  50%     { transform: scaleY(1.06); }
+}
+@keyframes hfNodYes {
+  0%   { transform: rotate(0deg) translateY(0); }
+  35%  { transform: rotate(2.4deg) translateY(.9px); }
+  70%  { transform: rotate(-1.6deg) translateY(0); }
+  100% { transform: rotate(0deg) translateY(0); }
+}
+@keyframes hfWorry {
+  0%,100% { transform: rotate(0deg) translateY(0); }
+  50%     { transform: rotate(-5deg) translateY(1px); }
+}
+@keyframes hfSweat {
+  0%   { opacity: 0; transform: translateY(0); }
+  12%  { opacity: 1; }
+  80%  { opacity: 1; transform: translateY(6.5px); }
+  100% { opacity: 0; transform: translateY(8.5px); }
+}
+@keyframes hfCore {
+  0%,100% { opacity: .35; transform: scale(.8); }
+  50%     { opacity: 1; transform: scale(1.35); }
+}
+
+  /* ══ Chat prose ════════════════════════════════════ */
+  .prose-chat { font-size: var(--msgfs, 14.5px); }
+  .prose-chat > *:first-child { margin-top: 0 !important; }
+  .prose-chat > *:last-child  { margin-bottom: 0 !important; }
+  .prose-chat p { margin: .55rem 0; line-height: 1.75; }
+  .prose-chat ul { list-style: disc;    padding-left: 1.25rem; margin: .6rem 0; }
+  .prose-chat ol { list-style: decimal; padding-left: 1.35rem; margin: .6rem 0; }
+  .prose-chat li { margin: .3rem 0; line-height: 1.7; }
+  .prose-chat li::marker { color: rgb(20 184 166 / .85); }
+  .prose-chat blockquote { border-left: 3px solid rgb(20 184 166 / .45); padding-left: .9rem; margin: .8rem 0; color: rgb(82 82 91); font-style: italic; }
+  .dark .prose-chat blockquote { color: rgb(161 161 170); }
+  .prose-chat strong { font-weight: 600; color: rgb(24 24 27); }
+  .dark .prose-chat strong { color: rgb(241 245 249); }
+  .prose-chat code:not(pre code) { font-family:'JetBrains Mono',monospace; font-size:.84em; padding:.12em .42em; border-radius:.4rem; background:rgb(228 228 231); color:rgb(15 118 110); }
+  .dark .prose-chat code:not(pre code) { background:rgb(255 255 255 / .07); color:rgb(45 212 191); }
+  .prose-chat table { width:100%; border-collapse: collapse; margin:.7rem 0; font-size:.92em; }
+  .prose-chat th { text-align:left; font-weight:600; padding:.45rem .6rem; border-bottom:1px solid rgb(228 228 231); font-size:.85em; }
+  .dark .prose-chat th { border-color: rgb(255 255 255 / .1); }
+  .prose-chat td { padding:.45rem .6rem; border-bottom:1px solid rgb(244 244 245); }
+  .dark .prose-chat td { border-color: rgb(255 255 255 / .06); }
+
+  .dot { animation: bounceDot 1.3s infinite; }
+  .dot:nth-child(2) { animation-delay: .16s; }
+  .dot:nth-child(3) { animation-delay: .32s; }
+
+  textarea { field-sizing: content; }
+  textarea.edit-area { field-sizing: fixed; }
+
+  #dropOverlay.active { display: flex; }
+
+  .reason-strip { position: relative; overflow: hidden; }
+  .reason-strip::after { content:''; position:absolute; inset:0; background:linear-gradient(90deg,transparent,rgba(45,212,191,.35),transparent); animation:progressStrip 1.6s ease-in-out infinite; }
+
+  .step-item { display:flex; align-items:center; gap:.55rem; padding:.28rem 0; font-size:12px; opacity:.35; transition:opacity .25s; animation:stepIn .3s both; }
+  .step-item.active { opacity:1; }
+  .step-item.done   { opacity:.75; }
+  .step-item.failed { opacity:1; }
+  .step-check { width:15px; height:15px; border-radius:999px; display:grid; place-items:center; flex-shrink:0; border:1.5px solid rgb(20 184 166 / .5); font-size:9px; color:rgb(13 148 136); }
+  .step-item.active .step-check { background:rgb(20 184 166); color:#fff; animation:recPulse 1.2s infinite; border-color:transparent; }
+  .step-item.done .step-check   { background:rgb(20 184 166 / .15); }
+  .step-item.failed .step-check { background:rgb(244 63 94); border-color:transparent; color:#fff; }
+  .step-spin { width:11px; height:11px; border:2px solid rgb(20 184 166 / .3); border-top-color:rgb(20 184 166); border-radius:999px; animation:spin .7s linear infinite; }
+  @keyframes spin { to { transform:rotate(360deg); } }
+
+  .msg-tab { font-size:11px; font-weight:600; padding:.28rem .7rem; border-radius:.55rem; color:rgb(113 113 122); transition:all .15s; }
+  .msg-tab:hover { color:rgb(63 63 70); background:rgb(228 228 231 / .6); }
+  .dark .msg-tab { color:rgb(113 113 122); }
+  .dark .msg-tab:hover { color:rgb(212 212 216); background:rgb(255 255 255 / .06); }
+  .msg-tab.on { background:rgb(20 184 166 / .12); color:rgb(13 148 136); }
+  .dark .msg-tab.on { background:rgb(45 212 191 / .12); color:rgb(45 212 191); }
+
+  .res-table { width:100%; border-collapse:collapse; font-size:12px; }
+  .res-table th { text-align:left; font-weight:600; font-size:10px; text-transform:uppercase; letter-spacing:.08em; color:rgb(113 113 122); padding:.45rem .6rem; border-bottom:1px solid rgb(228 228 231); white-space:nowrap; cursor:pointer; user-select:none; }
+  .dark .res-table th { color:rgb(161 161 170); border-color:rgb(255 255 255 / .08); }
+  .res-table th:hover { color:rgb(13 148 136); }
+  .res-table td { padding:.45rem .6rem; border-bottom:1px solid rgb(244 244 245); font-variant-numeric:tabular-nums; }
+  .dark .res-table td { border-color:rgb(255 255 255 / .05); }
+  .res-table tbody tr:hover td { background:rgb(20 184 166 / .05); }
+
+  .sql-kw  { color:#c084fc; font-weight:500; }
+  .sql-str { color:#86efac; }
+  .sql-fn  { color:#7dd3fc; }
+  .sql-cm  { color:#71717a; font-style:italic; }
+  .sql-num { color:#fbbf24; }
+
+  details.how-fami > summary { list-style:none; cursor:pointer; }
+  details.how-fami > summary::-webkit-details-marker { display:none; }
+  details.how-fami[open] .chev { transform:rotate(180deg); }
+  .chev { transition:transform .2s ease; }
+
+  #slashPopup { position:absolute; left:0; right:0; bottom:calc(100% + 8px); z-index:30; }
+
+  .follow-chip { font-size:11.5px; padding:.3rem .7rem; border-radius:999px; border:1px solid rgb(228 228 231); color:rgb(82 82 91); transition:all .15s; background:#fff; }
+  .follow-chip:hover { border-color:rgb(45 212 191); color:rgb(13 148 136); background:rgb(240 253 250); }
+  .dark .follow-chip { background:transparent; border-color:rgb(255 255 255 / .1); color:rgb(161 161 170); }
+  .dark .follow-chip:hover { border-color:rgb(45 212 191); color:rgb(45 212 191); background:rgb(45 212 191 / .08); }
+
+  kbd { font-family:'JetBrains Mono',monospace; }
+  .icon-btn { display:grid; place-items:center; border-radius:.65rem; color:rgb(161 161 170); transition:all .15s; }
+  .icon-btn:hover { color:rgb(63 63 70); background:rgb(228 228 231 / .7); }
+  .dark .icon-btn { color:rgb(113 113 122); }
+  .dark .icon-btn:hover { color:rgb(212 212 216); background:rgb(255 255 255 / .07); }
+
+  .find-dim { opacity:.22; filter:saturate(.4); }
+  mark.find-hit { background: rgba(251,191,36,.35); border-radius: 3px; padding: 0 1px; }
+
+  .menu-item { display:flex; align-items:center; gap:.6rem; width:100%; padding:.5rem .65rem; border-radius:.7rem; font-size:12.5px; font-weight:500; color:rgb(63 63 70); transition:all .12s; text-align:left; }
+  .menu-item:hover { background:rgb(228 228 231 / .7); }
+  .dark .menu-item { color:rgb(212 212 216); }
+  .dark .menu-item:hover { background:rgb(255 255 255 / .07); }
+  .menu-item.danger { color:rgb(225 29 72); }
+  .dark .menu-item.danger { color:rgb(251 113 133); }
+  .menu-item.danger:hover { background:rgb(244 63 94 / .1); }
+  .menu-item kbd { margin-left:auto; }
+
+  .drawer-panel { transition: transform .32s cubic-bezier(.22,1,.36,1); }
+
+  /* ══ Voice mode ══════════════════════════════════ */
+  #voiceMode.active { display: flex; }
+  .voice-aura { transition: transform .18s ease-out, opacity .25s ease-out, background .4s ease; }
+  .voice-bar { width: 4px; border-radius: 999px; background: currentColor; transform-origin: center; animation: voiceBar 1.1s ease-in-out infinite; }
+  @keyframes voiceBar { 0%,100% { transform: scaleY(.25); } 50% { transform: scaleY(1); } }
+  #voiceBars.idle-bars .voice-bar { animation-duration: 2.6s; opacity: .35; }
+  #voiceBars.speaking-bars .voice-bar { animation-duration: .55s; }
+  .voice-orb-btn { transition: all .18s ease; }
+  .voice-orb-btn:active { transform: scale(.94); }
+  #voiceCaption { transition: opacity .25s ease; }
+  @keyframes voiceIn { 0% { opacity:0; transform: scale(.96); } 100% { opacity:1; transform: scale(1); } }
+  #voiceMode.active .voice-panel { animation: voiceIn .35s cubic-bezier(.22,1,.36,1) both; }
+
+  @media print {
+    body * { visibility: hidden; }
+    #messages, #messages * { visibility: visible; }
+    #messages { position: absolute; inset: 0; width: 100%; padding: 24px; }
+  }
+</style>
+<base target="_blank">
+<base target="_blank">
+</head>
+
+<body class="h-screen overflow-hidden bg-zinc-50 dark:bg-ink-900 text-zinc-900 dark:text-slate-100 font-sans">
+
+<!-- Ambient background -->
+<div class="pointer-events-none fixed inset-0 overflow-hidden -z-10">
+  <div class="absolute -top-40 -left-40 w-[34rem] h-[34rem] rounded-full bg-fam-400/10 dark:bg-fam-500/[0.07] blur-[140px] animate-blob"></div>
+  <div class="absolute -bottom-40 -right-40 w-[32rem] h-[32rem] rounded-full bg-teal-400/10 dark:bg-fam-600/[0.06] blur-[140px] animate-blob" style="animation-delay:-12s"></div>
+</div>
+
+<input type="file" id="fileInput" multiple class="hidden" aria-hidden="true" />
+<input type="file" id="folderInput" webkitdirectory directory multiple class="hidden" aria-hidden="true" />
+
+<div class="relative flex h-screen">
+
+  <!-- ══════════ Sidebar ══════════ -->
+  <div id="sidebarWrap"
+       class="fixed lg:relative inset-y-0 left-0 z-40 w-[288px] shrink-0 overflow-hidden
+              transition-all duration-300 ease-[cubic-bezier(.22,1,.36,1)]
+              -translate-x-full lg:translate-x-0">
+    <aside class="w-[288px] h-full flex flex-col
+                  bg-white/80 dark:bg-ink-850/90 backdrop-blur-2xl
+                  border-r border-zinc-200/80 dark:border-white/[0.06]">
+
+      <!-- Brand -->
+      <div class="h-16 shrink-0 flex items-center gap-2.5 px-4">
+        <div id="brandFace" class="shrink-0"></div>
+        <div class="flex-1 min-w-0">
+          <div class="text-[12.5px] font-semibold tracking-tight leading-none">FAMASSER</div>
+          <div class="text-[10px] text-fam-600 dark:text-fam-400 font-semibold tracking-wider uppercase mt-0.5">Intelligence</div>
+        </div>
+        <button id="collapseBtn" title="Collapse sidebar" aria-label="Collapse sidebar" class="icon-btn w-8 h-8">
+          <svg class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><rect x="3" y="3" width="18" height="18" rx="2"/><path d="M9 3v18"/></svg>
+        </button>
+      </div>
+
+      <!-- New chat -->
+      <div class="px-3 pb-2.5">
+        <button id="newChatBtn"
+                class="w-full flex items-center gap-2 px-3 py-2.5 rounded-xl text-sm font-medium text-white
+                       bg-fam-700 hover:bg-fam-600
+                       shadow-lg shadow-fam-700/20 hover:shadow-fam-600/30
+                       active:scale-[.985] transition-all duration-200">
+          <svg class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="2.2" viewBox="0 0 24 24"><path stroke-linecap="round" d="M12 5v14M5 12h14"/></svg>
+          New conversation
+          <kbd class="ml-auto text-[10px] font-mono px-1.5 py-0.5 rounded bg-white/20">⌘K</kbd>
+        </button>
+      </div>
+
+      <!-- Search -->
+      <div class="px-3 pb-3">
+        <div class="relative">
+          <svg class="absolute left-3 top-1/2 -translate-y-1/2 w-3.5 h-3.5 text-zinc-400 pointer-events-none" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><circle cx="11" cy="11" r="7"/><path stroke-linecap="round" d="m20 20-3.5-3.5"/></svg>
+          <input id="searchChats" placeholder="Search conversations…" aria-label="Search conversations"
+                 class="w-full pl-9 pr-3 py-2 text-[13px] rounded-xl bg-zinc-100/80 dark:bg-white/[0.04]
+                        border border-transparent focus:border-fam-500/40 placeholder:text-zinc-400 dark:placeholder:text-zinc-500
+                        outline-none focus:ring-2 focus:ring-fam-500/15 transition" />
+        </div>
+      </div>
+
+      <!-- Workspace tools -->
+      <div class="px-3 pb-2">
+        <div class="text-[9.5px] font-semibold uppercase tracking-widest text-zinc-400 dark:text-zinc-500 px-1.5 mb-1">Workspace tools</div>
+        <div class="space-y-0.5" id="toolsNav">
+          <button data-tool="prompts" class="tool-btn w-full flex items-center gap-2.5 px-2.5 py-[7px] rounded-lg text-[12.5px] font-medium text-zinc-600 dark:text-zinc-400 hover:bg-zinc-100 dark:hover:bg-white/[0.05] hover:text-zinc-900 dark:hover:text-zinc-100 transition">
+            <svg class="w-4 h-4 text-fam-600 dark:text-fam-400" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M4 19V5a2 2 0 0 1 2-2h14v16H6a2 2 0 0 0-2 2Zm0 0a2 2 0 0 0 2 2h14"/></svg>
+            Prompt library
+          </button>
+          <button data-tool="history" class="tool-btn w-full flex items-center gap-2.5 px-2.5 py-[7px] rounded-lg text-[12.5px] font-medium text-zinc-600 dark:text-zinc-400 hover:bg-zinc-100 dark:hover:bg-white/[0.05] hover:text-zinc-900 dark:hover:text-zinc-100 transition">
+            <svg class="w-4 h-4 text-fam-600 dark:text-fam-400" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M3 12a9 9 0 1 0 2.6-6.3L3 8"/><path d="M3 3v5h5M12 7v5l3.5 2"/></svg>
+            SQL history
+          </button>
+          <button data-tool="schema" class="tool-btn w-full flex items-center gap-2.5 px-2.5 py-[7px] rounded-lg text-[12.5px] font-medium text-zinc-600 dark:text-zinc-400 hover:bg-zinc-100 dark:hover:bg-white/[0.05] hover:text-zinc-900 dark:hover:text-zinc-100 transition">
+            <svg class="w-4 h-4 text-fam-600 dark:text-fam-400" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><ellipse cx="12" cy="5.5" rx="7.5" ry="2.8"/><path d="M4.5 5.5v6c0 1.5 3.4 2.8 7.5 2.8s7.5-1.3 7.5-2.8v-6"/><path d="M4.5 11.5v6c0 1.5 3.4 2.8 7.5 2.8s7.5-1.3 7.5-2.8v-6"/></svg>
+            Schema explorer
+          </button>
+          <button data-tool="shortcuts" class="tool-btn w-full flex items-center gap-2.5 px-2.5 py-[7px] rounded-lg text-[12.5px] font-medium text-zinc-600 dark:text-zinc-400 hover:bg-zinc-100 dark:hover:bg-white/[0.05] hover:text-zinc-900 dark:hover:text-zinc-100 transition">
+            <svg class="w-4 h-4 text-fam-600 dark:text-fam-400" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><rect x="2.5" y="6" width="19" height="12" rx="2"/><path d="M6 10h.01M10 10h.01M14 10h.01M18 10h.01M6 14h.01M18 14h.01M9 14h6"/></svg>
+            Shortcuts
+          </button>
+          <button data-tool="sap" class="tool-btn w-full flex items-center gap-2.5 px-2.5 py-[7px] rounded-lg text-[12.5px] font-medium text-zinc-600 dark:text-zinc-400 hover:bg-zinc-100 dark:hover:bg-white/[0.05] hover:text-zinc-900 dark:hover:text-zinc-100 transition">
+            <svg class="w-4 h-4 text-fam-600 dark:text-fam-400" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><rect x="3" y="4" width="18" height="6.5" rx="1.6"/><rect x="3" y="13.5" width="18" height="6.5" rx="1.6"/><path stroke-linecap="round" d="M7 7.25h.01M7 16.75h.01"/><path stroke-linecap="round" d="M13 7.25h4M13 16.75h4"/></svg>
+            SAP Copilot
+            <span id="sapNavDot" class="ml-auto w-1.5 h-1.5 rounded-full bg-zinc-300 dark:bg-zinc-600"></span>
+          </button>
+          <button data-tool="settings" class="tool-btn w-full flex items-center gap-2.5 px-2.5 py-[7px] rounded-lg text-[12.5px] font-medium text-zinc-600 dark:text-zinc-400 hover:bg-zinc-100 dark:hover:bg-white/[0.05] hover:text-zinc-900 dark:hover:text-zinc-100 transition">
+            <svg class="w-4 h-4 text-fam-600 dark:text-fam-400" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M4 7h10M18 7h2M4 17h4M12 17h8"/><circle cx="16" cy="7" r="2.2"/><circle cx="10" cy="17" r="2.2"/></svg>
+            Settings
+          </button>
+        </div>
+      </div>
+
+      <!-- Chat list -->
+      <nav id="chatList" class="flex-1 overflow-y-auto px-2 pb-3 space-y-0.5" aria-label="Conversations"></nav>
+
+      <!-- Stats -->
+      <div class="px-4 pb-1.5">
+        <div id="sideStats" class="text-[10px] font-mono text-zinc-400 dark:text-zinc-500"></div>
+      </div>
+
+      <!-- Connection status -->
+      <div class="px-4 pb-2">
+        <button id="connPill" class="w-full flex items-center gap-2 text-[10.5px] text-zinc-400 dark:text-zinc-500 hover:text-zinc-600 dark:hover:text-zinc-300 transition">
+          <span id="dbDot" class="w-1.5 h-1.5 rounded-full bg-fam-400"></span>
+          <span class="font-mono">SQL Server · FAMASSER ERP</span>
+          <span id="dbMode" class="ml-auto font-semibold text-fam-600 dark:text-fam-400">On-prem</span>
+        </button>
+      </div>
+
+      <!-- User -->
+      <div class="p-3 border-t border-zinc-200/70 dark:border-white/[0.06]">
+        <button class="w-full flex items-center gap-2.5 p-2 rounded-xl hover:bg-zinc-100 dark:hover:bg-white/[0.05] transition group">
+          <div class="w-8 h-8 rounded-full bg-gradient-to-br from-fam-500 to-fam-700 grid place-items-center text-white text-xs font-semibold shadow">HB</div>
+          <div class="flex-1 min-w-0 text-left">
+            <div class="text-[13px] font-medium truncate">Hamza Boughanim</div>
+            <div class="text-[10px] text-zinc-400 truncate">FAMASSER · ERP Access</div>
+          </div>
+          <svg class="w-4 h-4 text-zinc-400 group-hover:text-zinc-600 dark:group-hover:text-zinc-300 transition" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><circle cx="12" cy="5" r="1"/><circle cx="12" cy="12" r="1"/><circle cx="12" cy="19" r="1"/></svg>
+        </button>
+      </div>
+    </aside>
+  </div>
+
+  <div id="backdrop" class="hidden fixed inset-0 z-30 bg-zinc-900/50 backdrop-blur-sm lg:hidden"></div>
+
+  <!-- ══════════ Main ══════════ -->
+  <main class="flex-1 flex flex-col min-w-0 relative">
+
+    <!-- Header -->
+    <header class="h-16 shrink-0 flex items-center gap-2 px-3 sm:px-5 z-20
+                   border-b border-zinc-200/70 dark:border-white/[0.06]
+                   bg-white/60 dark:bg-ink-900/70 backdrop-blur-xl">
+
+      <div id="hdrNav" class="flex items-center gap-1">
+        <button id="menuBtn" class="lg:hidden icon-btn w-9 h-9" aria-label="Open menu">
+          <svg class="w-5 h-5" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" d="M4 6h16M4 12h16M4 18h16"/></svg>
+        </button>
+        <button id="desktopToggle" class="hidden lg:grid icon-btn w-9 h-9" aria-label="Toggle sidebar">
+          <svg class="w-5 h-5" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><rect x="3" y="3" width="18" height="18" rx="2"/><path d="M9 3v18"/></svg>
+        </button>
+      </div>
+
+      <!-- Identity + live status -->
+      <div class="flex items-center gap-2.5 pl-1 min-w-0">
+        <div id="headerFace" class="shrink-0"></div>
+        <div class="hidden sm:block leading-tight min-w-0">
+          <div class="text-[13px] font-semibold tracking-tight">FAMASSER Intelligence</div>
+          <div class="text-[10.5px] text-zinc-500 dark:text-zinc-400 flex items-center gap-1.5">
+            <span id="statusDot" class="w-1.5 h-1.5 rounded-full bg-fam-400"></span>
+            <span id="statusText" class="truncate">Fami · Prêt</span>
+          </div>
+        </div>
+      </div>
+
+      <span id="latChip" class="hidden md:inline-flex items-center gap-1.5 ml-3 px-2 py-1 rounded-full text-[10px] font-mono
+            bg-zinc-100 dark:bg-white/[0.05] text-zinc-500 dark:text-zinc-400 border border-zinc-200/70 dark:border-white/[0.06]">
+        <span class="w-1 h-1 rounded-full bg-fam-400"></span><span id="latText">12 ms</span>
+      </span>
+
+      <!-- Model selector -->
+      <div class="relative ml-auto sm:ml-3">
+        <button id="modelBtn" aria-haspopup="menu" aria-label="Select model"
+                class="flex items-center gap-2 pl-2 pr-2.5 py-1.5 rounded-xl hover:bg-zinc-100 dark:hover:bg-white/5 transition group">
+          <span id="modelGlyph" class="w-6 h-6 rounded-lg bg-gradient-to-br from-fam-500 to-fam-700 grid place-items-center text-white text-[11px] shadow-sm font-semibold">F</span>
+          <span id="modelName" class="text-[12.5px] font-semibold tracking-tight">Fami</span>
+          <svg class="w-3.5 h-3.5 text-zinc-400 group-hover:text-zinc-600 dark:group-hover:text-zinc-300 transition" fill="none" stroke="currentColor" stroke-width="2.2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="m6 9 6 6 6-6"/></svg>
+        </button>
+        <div id="modelMenu" role="menu"
+             class="hidden absolute right-0 top-full mt-2 w-72 p-1.5 rounded-2xl z-50
+                    bg-white dark:bg-ink-800 border border-zinc-200 dark:border-white/10
+                    shadow-2xl shadow-zinc-900/10 dark:shadow-black/60 origin-top-right"></div>
+      </div>
+
+      <div id="hdrTools" class="flex items-center gap-1">
+        <button id="findBtn" title="Search in conversation (Ctrl+F)" aria-label="Search in conversation" class="hidden sm:grid icon-btn w-9 h-9">
+          <svg class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><circle cx="11" cy="11" r="7"/><path stroke-linecap="round" d="m20 20-3.5-3.5"/></svg>
+        </button>
+        <button id="zenBtn" title="Focus mode" aria-label="Focus mode" class="hidden sm:grid icon-btn w-9 h-9">
+          <svg class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M8 3H5a2 2 0 0 0-2 2v3M16 3h3a2 2 0 0 1 2 2v3M8 21H5a2 2 0 0 1-2-2v-3M16 21h3a2 2 0 0 0 2-2v-3"/></svg>
+        </button>
+        <button id="shareBtn" title="Share conversation" aria-label="Share conversation" class="hidden sm:grid icon-btn w-9 h-9">
+          <svg class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><circle cx="18" cy="5" r="3"/><circle cx="6" cy="12" r="3"/><circle cx="18" cy="19" r="3"/><path d="m8.6 13.5 6.8 4M15.4 6.5l-6.8 4"/></svg>
+        </button>
+        <button id="printBtn" title="Print conversation" aria-label="Print" class="hidden sm:grid icon-btn w-9 h-9">
+          <svg class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M7 8V3h10v5"/><rect x="3" y="8" width="18" height="8" rx="2"/><path d="M7 13h10v8H7Z"/></svg>
+        </button>
+        <button id="themeBtn" title="Toggle theme" aria-label="Toggle theme" class="icon-btn w-9 h-9">
+          <svg class="w-4 h-4 hidden dark:block" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><circle cx="12" cy="12" r="4"/><path stroke-linecap="round" d="M12 2v2M12 20v2M4.9 4.9l1.4 1.4M17.7 17.7l1.4 1.4M2 12h2M20 12h2M4.9 19.1l1.4-1.4M17.7 6.3l1.4-1.4"/></svg>
+          <svg class="w-4 h-4 block dark:hidden" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M21 12.8A9 9 0 1 1 11.2 3a7 7 0 0 0 9.8 9.8Z"/></svg>
+        </button>
+        <div class="relative">
+          <button id="moreBtn" title="More options" aria-label="More options" class="icon-btn w-9 h-9">
+            <svg class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><circle cx="12" cy="5" r="1"/><circle cx="12" cy="12" r="1"/><circle cx="12" cy="19" r="1"/></svg>
+          </button>
+          <div id="moreMenu" class="hidden absolute right-0 top-full mt-2 w-60 p-1.5 rounded-2xl z-50 bg-white dark:bg-ink-800 border border-zinc-200 dark:border-white/10 shadow-2xl shadow-zinc-900/10 dark:shadow-black/60 origin-top-right"></div>
+        </div>
+      </div>
+
+      <button id="zenExit" title="Exit focus mode (Esc)" aria-label="Exit focus mode"
+              class="ml-2 icon-btn w-9 h-9 border border-zinc-200 dark:border-white/10">
+        <svg class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M8 3v4a2 2 0 0 1-2 2H3M16 3v4a2 2 0 0 0 2 2h3M8 21v-4a2 2 0 0 0-2-2H3M16 21v-4a2 2 0 0 1 2-2h3"/></svg>
+      </button>
+    </header>
+
+    <!-- Generation progress bar -->
+    <div id="genProgress" class="hidden absolute top-16 inset-x-0 z-20 h-[2px] reason-strip bg-fam-500/20"></div>
+
+    <!-- In-chat search -->
+    <div id="findBar" class="hidden absolute top-[4.4rem] inset-x-0 z-30 px-4 sm:px-6">
+      <div class="max-w-3xl mx-auto flex items-center gap-2 px-3 py-2 rounded-2xl animate-popIn
+                  bg-white/95 dark:bg-ink-800/95 backdrop-blur-xl border border-fam-500/30 shadow-xl shadow-zinc-900/10 dark:shadow-black/40">
+        <svg class="w-3.5 h-3.5 text-fam-500 shrink-0" fill="none" stroke="currentColor" stroke-width="2.4" viewBox="0 0 24 24"><circle cx="11" cy="11" r="7"/><path stroke-linecap="round" d="m20 20-3.5-3.5"/></svg>
+        <input id="findInput" placeholder="Find in conversation…" aria-label="Find in conversation"
+               class="flex-1 bg-transparent outline-none text-[13px] placeholder:text-zinc-400 min-w-0" />
+        <span id="findCount" class="text-[10.5px] font-mono text-zinc-400 shrink-0"></span>
+        <button id="findPrev" class="icon-btn w-7 h-7" title="Previous" aria-label="Previous match">
+          <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" stroke-width="2.2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="m18 15-6-6-6 6"/></svg>
+        </button>
+        <button id="findNext" class="icon-btn w-7 h-7" title="Next" aria-label="Next match">
+          <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" stroke-width="2.2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="m6 9 6 6 6-6"/></svg>
+        </button>
+        <button id="findClose" class="icon-btn w-7 h-7" title="Close (Esc)" aria-label="Close search">
+          <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" stroke-width="2.2" viewBox="0 0 24 24"><path stroke-linecap="round" d="M18 6 6 18M6 6l12 12"/></svg>
+        </button>
+      </div>
+    </div>
+
+    <!-- Chat scroll -->
+    <div id="chatScroll" class="flex-1 overflow-y-auto overscroll-contain">
+      <div id="messages" class="max-w-3xl mx-auto px-4 sm:px-6 py-8"></div>
+    </div>
+
+    <!-- Scroll to bottom -->
+    <button id="scrollBtn" aria-label="Scroll to bottom"
+            class="hidden absolute left-1/2 -translate-x-1/2 bottom-[10rem] z-20
+                   w-9 h-9 grid place-items-center rounded-full
+                   bg-white dark:bg-ink-800 border border-zinc-200 dark:border-white/10
+                   shadow-lg text-zinc-500 hover:text-fam-600 dark:hover:text-fam-400 transition-all duration-200">
+      <svg class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="2.2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M12 5v14M19 12l-7 7-7-7"/></svg>
+    </button>
+
+    <!-- Composer -->
+    <div class="shrink-0 px-4 sm:px-6 pb-5 pt-2 relative">
+      <div class="absolute -top-10 inset-x-0 h-10 bg-gradient-to-t from-zinc-50 dark:from-ink-900 to-transparent pointer-events-none"></div>
+
+      <div class="max-w-3xl mx-auto">
+        <div id="composer"
+             class="relative rounded-[22px] border border-zinc-200 dark:border-white/[0.08]
+                    bg-white/95 dark:bg-ink-800/95 backdrop-blur-xl
+                    shadow-lg shadow-zinc-900/[0.04] dark:shadow-black/40
+                    focus-within:border-fam-500/50 focus-within:ring-4 focus-within:ring-fam-500/10
+                    transition-all duration-200">
+
+          <!-- Slash commands popup -->
+          <div id="slashPopup" class="hidden">
+            <div class="rounded-2xl overflow-hidden bg-white dark:bg-ink-800
+                        border border-zinc-200 dark:border-white/10 shadow-2xl shadow-black/30 animate-msgIn">
+              <div class="px-3.5 py-2 border-b border-zinc-100 dark:border-white/[0.06] text-[10px] font-semibold uppercase tracking-widest text-zinc-400">Commands</div>
+              <div id="slashList" class="max-h-52 overflow-y-auto p-1.5"></div>
+            </div>
+          </div>
+
+          <!-- Attachment chips -->
+          <div id="attachments" class="hidden flex-wrap gap-1.5 px-2.5 pt-2.5"></div>
+
+          <textarea id="input" rows="1" placeholder="Ask Fami about your business data…  (drop files, type / for commands)"
+                    aria-label="Message Fami"
+                    class="block w-full resize-none bg-transparent px-4 pt-3.5 pb-1
+                           text-[15px] leading-relaxed outline-none
+                           placeholder:text-zinc-400 dark:placeholder:text-zinc-500
+                           max-h-[200px] overflow-y-auto"></textarea>
+
+          <div class="flex items-center gap-1 px-2.5 pb-2.5 pt-1">
+            <button id="attachBtn" title="Attach files" aria-label="Attach files" class="icon-btn w-8 h-8">
+              <svg class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" d="M21.4 11.05 12.25 20.2a5 5 0 0 1-7.07-7.07l9.19-9.19a3.5 3.5 0 1 1 4.95 4.95l-9.2 9.19a2 2 0 0 1-2.82-2.83l8.48-8.48"/></svg>
+            </button>
+            <button id="folderBtn" title="Upload folder" aria-label="Upload folder" class="icon-btn w-8 h-8">
+              <svg class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M3 7a2 2 0 0 1 2-2h3.6l2 2.2H19a2 2 0 0 1 2 2V17a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V7Z"/></svg>
+            </button>
+            <button id="toolsBtn" title="Workspace tools" aria-label="Workspace tools" class="icon-btn w-8 h-8">
+              <svg class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M14.7 6.3a4 4 0 0 0 5 5l-9.4 9.4a2.1 2.1 0 1 1-3-3l9.4-9.4Z"/><path stroke-linecap="round" d="M14.7 6.3 17 4l3 3-2.3 2.3"/></svg>
+            </button>
+            <button id="micBtn" title="Voice input (dictate into the box)" aria-label="Voice input" class="icon-btn w-8 h-8">
+              <svg class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><rect x="9" y="2" width="6" height="12" rx="3"/><path stroke-linecap="round" d="M5 10a7 7 0 0 0 14 0M12 19v3"/></svg>
+            </button>
+            <button id="voiceModeBtn" title="Voice mode — talk with Fami" aria-label="Open voice mode"
+                    class="icon-btn w-8 h-8 relative text-fam-600 dark:text-fam-400 hover:!text-fam-500">
+              <svg class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24" stroke-linecap="round"><path d="M3 12h1.5M20.5 12H22M7 8v8M11 4.5v15M15 7v10M19 9.5v5"/></svg>
+            </button>
+
+            <span id="charCount" class="ml-1 text-[11px] font-mono text-zinc-400 opacity-0 transition-opacity"></span>
+
+            <div class="ml-auto flex items-center gap-1.5">
+              <button id="stopBtn"
+                      class="hidden items-center gap-1.5 px-2.5 h-8 rounded-lg text-[12px] font-medium
+                             text-rose-600 dark:text-rose-400 bg-rose-500/10 hover:bg-rose-500/20 transition">
+                <span class="w-2.5 h-2.5 rounded-[3px] bg-current"></span> Stop
+              </button>
+              <button id="sendBtn" disabled aria-label="Send message"
+                      class="w-9 h-9 grid place-items-center rounded-xl text-white
+                             bg-fam-700 hover:bg-fam-600 shadow-lg shadow-fam-700/25
+                             disabled:opacity-30 disabled:shadow-none disabled:cursor-not-allowed
+                             hover:shadow-fam-600/40 hover:-translate-y-px active:translate-y-0 active:scale-95 transition-all duration-200">
+                <svg class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="2.4" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M12 19V5M5 12l7-7 7 7"/></svg>
+              </button>
+            </div>
+          </div>
+        </div>
+
+        <p class="text-center text-[11px] text-zinc-400 dark:text-zinc-500 mt-2.5">
+          <kbd class="font-mono">Enter</kbd> to send ·
+          <kbd class="font-mono">Shift</kbd>+<kbd class="font-mono">Enter</kbd> new line ·
+          <kbd class="font-mono">/</kbd> commands ·
+          <kbd class="font-mono">Ctrl</kbd>+<kbd class="font-mono">F</kbd> find ·
+          <button id="voiceHint" class="underline decoration-dotted hover:text-fam-500 transition"><kbd class="font-mono">V</kbd> voice mode</button> ·
+          <button id="cmdkHint" class="underline decoration-dotted hover:text-fam-500 transition">⌘K palette</button>
+          · <span class="text-fam-600 dark:text-fam-400 font-medium">Fami does not invent business data</span>
+        </p>
+      </div>
+    </div>
+  </main>
+</div>
+
+<!-- ══════════ Right drawer (tools) ══════════ -->
+<div id="drawerBackdrop" class="hidden fixed inset-0 z-[70] bg-zinc-900/30 dark:bg-black/50 backdrop-blur-[2px]"></div>
+<div id="drawer" class="drawer-panel fixed inset-y-0 right-0 z-[80] w-[360px] max-w-[92vw] translate-x-full
+     bg-white dark:bg-ink-850 border-l border-zinc-200 dark:border-white/[0.07] shadow-2xl shadow-black/40
+     flex flex-col">
+  <div class="h-14 shrink-0 flex items-center gap-2.5 px-4 border-b border-zinc-100 dark:border-white/[0.06]">
+    <span id="drawerIcon" class="text-fam-600 dark:text-fam-400"></span>
+    <span id="drawerTitle" class="text-[13.5px] font-semibold tracking-tight">Tool</span>
+    <button id="drawerClose" class="icon-btn w-8 h-8 ml-auto" aria-label="Close panel">
+      <svg class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="2.2" viewBox="0 0 24 24"><path stroke-linecap="round" d="M18 6 6 18M6 6l12 12"/></svg>
+    </button>
+  </div>
+  <div id="drawerBody" class="flex-1 overflow-y-auto p-4"></div>
+</div>
+
+<!-- ══════════ Settings modal ══════════ -->
+<div id="settingsModal" class="hidden fixed inset-0 z-[95]">
+  <div id="settingsBackdrop" class="absolute inset-0 bg-zinc-900/40 dark:bg-black/60 backdrop-blur-sm"></div>
+  <div class="relative max-w-md mx-auto mt-[10vh] px-4">
+    <div class="rounded-2xl overflow-hidden bg-white dark:bg-ink-800 border border-zinc-200 dark:border-white/10 shadow-2xl shadow-black/40 animate-popIn">
+      <div class="flex items-center gap-2.5 px-5 py-4 border-b border-zinc-100 dark:border-white/[0.06]">
+        <svg class="w-4 h-4 text-fam-600 dark:text-fam-400" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M4 7h10M18 7h2M4 17h4M12 17h8"/><circle cx="16" cy="7" r="2.2"/><circle cx="10" cy="17" r="2.2"/></svg>
+        <span class="text-[14px] font-semibold tracking-tight">Settings</span>
+        <button id="settingsClose" class="icon-btn w-8 h-8 ml-auto" aria-label="Close settings">
+          <svg class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="2.2" viewBox="0 0 24 24"><path stroke-linecap="round" d="M18 6 6 18M6 6l12 12"/></svg>
+        </button>
+      </div>
+      <div id="settingsBody" class="p-5 space-y-5 max-h-[62vh] overflow-y-auto"></div>
+      <div class="px-5 py-3.5 border-t border-zinc-100 dark:border-white/[0.06] flex items-center gap-2">
+        <button id="settingsReset" class="text-[12px] font-medium text-rose-500 hover:text-rose-400 transition">Reset all data</button>
+        <button id="settingsSave" class="ml-auto px-4 py-2 rounded-xl text-[12.5px] font-semibold text-white bg-fam-700 hover:bg-fam-600 shadow-md shadow-fam-700/25 active:scale-[.97] transition">Save</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ══════════ Confirm modal ══════════ -->
+<div id="confirmModal" class="hidden fixed inset-0 z-[96]">
+  <div class="absolute inset-0 bg-zinc-900/40 dark:bg-black/60 backdrop-blur-sm"></div>
+  <div class="relative max-w-sm mx-auto mt-[22vh] px-4">
+    <div class="rounded-2xl bg-white dark:bg-ink-800 border border-zinc-200 dark:border-white/10 shadow-2xl shadow-black/40 p-5 animate-popIn">
+      <div class="flex items-start gap-3">
+        <div id="confirmIcon" class="w-9 h-9 shrink-0 rounded-xl grid place-items-center bg-rose-500/10 text-rose-500"></div>
+        <div class="min-w-0">
+          <div id="confirmTitle" class="text-[14px] font-semibold tracking-tight">Are you sure?</div>
+          <div id="confirmBody" class="text-[12.5px] text-zinc-500 dark:text-zinc-400 mt-1 leading-relaxed"></div>
+        </div>
+      </div>
+      <div class="flex justify-end gap-2 mt-5">
+        <button id="confirmCancel" class="px-3.5 py-2 rounded-xl text-[12.5px] font-medium text-zinc-600 dark:text-zinc-300 hover:bg-zinc-100 dark:hover:bg-white/[0.07] transition">Cancel</button>
+        <button id="confirmOk" class="px-3.5 py-2 rounded-xl text-[12.5px] font-semibold text-white bg-rose-600 hover:bg-rose-500 shadow-md shadow-rose-600/25 active:scale-[.97] transition">Delete</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- Drag overlay -->
+<div id="dropOverlay"
+     class="hidden fixed inset-0 z-[97] items-center justify-center bg-zinc-950/50 dark:bg-black/70"
+     style="backdrop-filter: blur(6px);">
+  <div class="animate-overlayIn mx-4 max-w-lg w-full p-10 rounded-3xl
+              border-2 border-dashed border-fam-500/60 dark:border-fam-400/50
+              bg-white/95 dark:bg-ink-800/95 text-center shadow-2xl">
+    <div class="w-14 h-14 mx-auto rounded-2xl bg-fam-500/10 dark:bg-fam-500/15 grid place-items-center mb-4">
+      <svg class="w-7 h-7 text-fam-600 dark:text-fam-400" fill="none" stroke="currentColor" stroke-width="1.8" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M3 7a2 2 0 0 1 2-2h3.6l2 2.2H19a2 2 0 0 1 2 2V17a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V7Z"/><path stroke-linecap="round" stroke-linejoin="round" d="M12 11v6M9 14l3-3 3 3"/></svg>
+    </div>
+    <h3 class="text-[17px] font-semibold tracking-tight">Drop files or folders</h3>
+    <p class="text-[13px] text-zinc-500 dark:text-zinc-400 mt-1.5">Release to attach them to your request</p>
+  </div>
+</div>
+
+<!-- ══════════ Voice mode — full immersive talk view ══════════ -->
+<div id="voiceMode" class="hidden fixed inset-0 z-[150] flex-col bg-zinc-50 dark:bg-ink-900">
+  <div class="pointer-events-none absolute inset-0 overflow-hidden">
+    <div id="voiceBlobA" class="absolute -top-40 -left-40 w-[36rem] h-[36rem] rounded-full bg-fam-400/10 dark:bg-fam-500/[0.08] blur-[150px] animate-blob voice-aura"></div>
+    <div id="voiceBlobB" class="absolute -bottom-40 -right-40 w-[34rem] h-[34rem] rounded-full bg-sky-400/10 dark:bg-sky-500/[0.06] blur-[150px] animate-blob voice-aura" style="animation-delay:-12s"></div>
+  </div>
+
+  <!-- Top bar -->
+  <div class="relative z-10 h-16 shrink-0 flex items-center justify-between px-5">
+    <div class="flex items-center gap-2.5">
+      <span class="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full bg-fam-500/10 dark:bg-fam-500/[0.12] text-fam-700 dark:text-fam-300 text-[10.5px] font-semibold uppercase tracking-widest">
+        <span class="w-1.5 h-1.5 rounded-full bg-fam-500 animate-pulse"></span> Voice mode
+      </span>
+    </div>
+    <button id="voiceCloseBtn" title="Exit voice mode (Esc)" aria-label="Exit voice mode"
+            class="icon-btn w-10 h-10 border border-zinc-200 dark:border-white/10 bg-white/60 dark:bg-white/[0.04]">
+      <svg class="w-4.5 h-4.5" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" d="M18 6 6 18M6 6l12 12"/></svg>
+    </button>
+  </div>
+
+  <!-- Center stage -->
+  <div class="relative z-10 flex-1 min-h-0 flex flex-col items-center justify-center px-6">
+    <div class="voice-panel flex flex-col items-center max-w-xl w-full">
+      <div class="relative grid place-items-center mb-6">
+        <div id="voiceAuraGlow" class="voice-aura absolute w-64 h-64 sm:w-72 sm:h-72 rounded-full bg-fam-400/25 dark:bg-fam-500/25 blur-3xl scale-100 opacity-60"></div>
+        <div id="voiceFace" class="relative"></div>
+      </div>
+
+      <div id="voiceBars" class="idle-bars flex items-end justify-center gap-[5px] h-8 mb-5 text-fam-500 dark:text-fam-400"></div>
+
+      <div id="voiceStatusLabel" class="text-[15px] font-semibold tracking-tight text-zinc-800 dark:text-slate-100 mb-2">Fami · Prêt</div>
+
+      <div id="voiceCaptionWrap" class="w-full min-h-[4.5rem] rounded-2xl px-5 py-3.5 bg-white/70 dark:bg-white/[0.04] border border-zinc-200/70 dark:border-white/[0.07] backdrop-blur-xl">
+        <p id="voiceCaption" class="text-[14px] leading-relaxed text-zinc-600 dark:text-zinc-300 text-center">
+          Tap the mic and just talk — I'll listen, think out loud, and answer back.
+        </p>
+      </div>
+    </div>
+  </div>
+
+  <!-- Bottom controls -->
+  <div class="relative z-10 shrink-0 pb-8 pt-2 flex items-center justify-center gap-4">
+    <button id="voiceMuteBtn" title="Mute Fami's voice" aria-label="Mute Fami's voice"
+            class="voice-orb-btn w-12 h-12 rounded-full grid place-items-center border border-zinc-200 dark:border-white/10 bg-white/70 dark:bg-white/[0.05] text-zinc-500 dark:text-zinc-400 hover:text-fam-600 dark:hover:text-fam-400 shadow-sm">
+      <svg class="w-4.5 h-4.5" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24" stroke-linecap="round" stroke-linejoin="round"><path d="M11 5 6.5 9H3v6h3.5L11 19V5Z"/><path d="M15.5 8.5a5 5 0 0 1 0 7M18.5 5.5a9.5 9.5 0 0 1 0 13"/></svg>
+    </button>
+    <button id="voiceMicBtn" title="Pause listening" aria-label="Pause or resume listening"
+            class="voice-orb-btn w-16 h-16 rounded-full grid place-items-center text-white bg-fam-700 hover:bg-fam-600 shadow-xl shadow-fam-700/30">
+      <svg class="w-6 h-6" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24" stroke-linecap="round" stroke-linejoin="round"><rect x="9" y="2" width="6" height="12" rx="3"/><path d="M5 10a7 7 0 0 0 14 0M12 19v3"/></svg>
+    </button>
+    <button id="voiceTextModeBtn" title="Switch back to text" aria-label="Switch back to text"
+            class="voice-orb-btn w-12 h-12 rounded-full grid place-items-center border border-zinc-200 dark:border-white/10 bg-white/70 dark:bg-white/[0.05] text-zinc-500 dark:text-zinc-400 hover:text-fam-600 dark:hover:text-fam-400 shadow-sm">
+      <svg class="w-4.5 h-4.5" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24" stroke-linecap="round" stroke-linejoin="round"><path d="M21 11.5a8.4 8.4 0 0 1-9 8.4 8.9 8.9 0 0 1-4-.9L3 21l1.9-4.9A8.4 8.4 0 0 1 12 3.1a8.4 8.4 0 0 1 9 8.4Z"/></svg>
+    </button>
+  </div>
+</div>
+
+<!-- Command palette -->
+<div id="palette" class="hidden fixed inset-0 z-[100]">
+  <div id="paletteBackdrop" class="absolute inset-0 bg-zinc-900/40 dark:bg-black/60 backdrop-blur-sm"></div>
+  <div class="relative max-w-lg mx-auto mt-[14vh] px-4">
+    <div class="rounded-2xl overflow-hidden bg-white dark:bg-ink-800
+                border border-zinc-200 dark:border-white/10 shadow-2xl shadow-black/30 animate-popIn">
+      <div class="flex items-center gap-3 px-4 py-3.5 border-b border-zinc-100 dark:border-white/[0.06]">
+        <svg class="w-4 h-4 text-zinc-400 shrink-0" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><circle cx="11" cy="11" r="7"/><path stroke-linecap="round" d="m20 20-3.5-3.5"/></svg>
+        <input id="paletteInput" placeholder="Type a command…" aria-label="Command"
+               class="flex-1 bg-transparent outline-none text-[15px] placeholder:text-zinc-400" />
+        <kbd class="text-[10px] font-mono px-1.5 py-0.5 rounded bg-zinc-100 dark:bg-white/10 text-zinc-400">ESC</kbd>
+      </div>
+      <div id="paletteList" class="max-h-72 overflow-y-auto p-1.5"></div>
+    </div>
+  </div>
+</div>
+
+<!-- Toasts -->
+<div id="toastWrap" class="fixed bottom-6 left-1/2 -translate-x-1/2 z-[110] flex flex-col items-center gap-2 pointer-events-none"></div>
+
+<script>
+/* ═══════════════════════════════════════════════════════════
+   SVG icon system (no emoji)
+   ═══════════════════════════════════════════════════════════ */
+const ICONS = {
+  plus:'<path stroke-linecap="round" d="M12 5v14M5 12h14"/>',
+  search:'<circle cx="11" cy="11" r="7"/><path stroke-linecap="round" d="m20 20-3.5-3.5"/>',
+  send:'<path stroke-linecap="round" stroke-linejoin="round" d="M12 19V5M5 12l7-7 7 7"/>',
+  mic:'<rect x="9" y="2" width="6" height="12" rx="3"/><path stroke-linecap="round" d="M5 10a7 7 0 0 0 14 0M12 19v3"/>',
+  copy:'<rect x="9" y="9" width="12" height="12" rx="2"/><path d="M5 15V5a2 2 0 0 1 2-2h10"/>',
+  check:'<path stroke-linecap="round" stroke-linejoin="round" d="m5 13 4 4L19 7"/>',
+  refresh:'<path stroke-linecap="round" stroke-linejoin="round" d="M20 11A8 8 0 0 0 6.3 6.3L3 9.5M4 13a8 8 0 0 0 13.7 4.7L21 14.5"/><path stroke-linecap="round" d="M3 4v5.5h5.5M21 20v-5.5h-5.5"/>',
+  thumbsUp:'<path stroke-linecap="round" stroke-linejoin="round" d="M7 22V11l5-9a2.5 2.5 0 0 1 2.5 2.5V9h5a2 2 0 0 1 2 2.3l-1.3 8A2 2 0 0 1 18.2 21H7Z"/><path d="M7 11H3v11h4"/>',
+  thumbsDown:'<path stroke-linecap="round" stroke-linejoin="round" d="M17 2v11l-5 9a2.5 2.5 0 0 1-2.5-2.5V15h-5a2 2 0 0 1-2-2.3l1.3-8A2 2 0 0 1 5.8 3H17Z"/><path d="M17 13h4V2h-4"/>',
+  trash:'<path stroke-linecap="round" d="M4 7h16M9 7V5a1 1 0 0 1 1-1h4a1 1 0 0 1 1 1v2M6.5 7l1 12a1.5 1.5 0 0 0 1.5 1.4h6a1.5 1.5 0 0 0 1.5-1.4l1-12"/><path stroke-linecap="round" d="M10 11v6M14 11v6"/>',
+  edit:'<path stroke-linecap="round" d="M12 20h9"/><path stroke-linecap="round" stroke-linejoin="round" d="M16.5 3.5a2.1 2.1 0 0 1 3 3L7 19l-4 1 1-4Z"/>',
+  pin:'<path stroke-linecap="round" stroke-linejoin="round" d="M9 4h6l1 6 2.5 3.5a1 1 0 0 1-.8 1.5H6.3a1 1 0 0 1-.8-1.5L8 10Z"/><path stroke-linecap="round" d="M12 15v6"/>',
+  download:'<path stroke-linecap="round" stroke-linejoin="round" d="M12 5v10M7 10l5 5 5-5M4 19h16"/>',
+  volume:'<path stroke-linecap="round" stroke-linejoin="round" d="M11 5 6.5 9H3v6h3.5L11 19V5Z"/><path stroke-linecap="round" d="M15.5 8.5a5 5 0 0 1 0 7M18.5 5.5a9.5 9.5 0 0 1 0 13"/>',
+  volumeX:'<path stroke-linecap="round" stroke-linejoin="round" d="M11 5 6.5 9H3v6h3.5L11 19V5Z"/><path stroke-linecap="round" d="m16 9 6 6M22 9l-6 6"/>',
+  settings:'<path d="M4 7h10M18 7h2M4 17h4M12 17h8"/><circle cx="16" cy="7" r="2.2"/><circle cx="10" cy="17" r="2.2"/>',
+  keyboard:'<rect x="2.5" y="6" width="19" height="12" rx="2"/><path stroke-linecap="round" d="M6 10h.01M10 10h.01M14 10h.01M18 10h.01M6 14h.01M18 14h.01M9 14h6"/>',
+  book:'<path d="M4 19V5a2 2 0 0 1 2-2h14v16H6a2 2 0 0 0-2 2Zm0 0a2 2 0 0 0 2 2h14"/>',
+  history:'<path stroke-linecap="round" stroke-linejoin="round" d="M3 12a9 9 0 1 0 2.6-6.3L3 8"/><path stroke-linecap="round" stroke-linejoin="round" d="M3 3v5h5M12 7v5l3.5 2"/>',
+  database:'<ellipse cx="12" cy="5.5" rx="7.5" ry="2.8"/><path d="M4.5 5.5v6c0 1.5 3.4 2.8 7.5 2.8s7.5-1.3 7.5-2.8v-6"/><path d="M4.5 11.5v6c0 1.5 3.4 2.8 7.5 2.8s7.5-1.3 7.5-2.8v-6"/>',
+  table:'<rect x="3" y="4.5" width="18" height="15" rx="2"/><path d="M3 10h18M12 10v9.5"/>',
+  terminal:'<rect x="3" y="4" width="18" height="16" rx="2"/><path stroke-linecap="round" stroke-linejoin="round" d="m7 9 3 3-3 3M13 15h4"/>',
+  zap:'<path stroke-linecap="round" stroke-linejoin="round" d="M13 2 4.5 13.5H11L10 22l8.5-11.5H12L13 2Z"/>',
+  alert:'<path stroke-linecap="round" stroke-linejoin="round" d="M12 3.5 2.5 20h19L12 3.5Z"/><path stroke-linecap="round" d="M12 10v4M12 17h.01"/>',
+  x:'<path stroke-linecap="round" d="M18 6 6 18M6 6l12 12"/>',
+  dots:'<circle cx="12" cy="5" r="1"/><circle cx="12" cy="12" r="1"/><circle cx="12" cy="19" r="1"/>',
+  maximize:'<path stroke-linecap="round" d="M8 3H5a2 2 0 0 0-2 2v3M16 3h3a2 2 0 0 1 2 2v3M8 21H5a2 2 0 0 1-2-2v-3M16 21h3a2 2 0 0 0 2-2v-3"/>',
+  print:'<path d="M7 8V3h10v5"/><rect x="3" y="8" width="18" height="8" rx="2"/><path d="M7 13h10v8H7Z"/>',
+  fileText:'<path stroke-linecap="round" stroke-linejoin="round" d="M14 2H7a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h10a2 2 0 0 0 2-2V7Z"/><path stroke-linecap="round" d="M14 2v5h5M9 13h6M9 17h6"/>',
+  share:'<circle cx="18" cy="5" r="3"/><circle cx="6" cy="12" r="3"/><circle cx="18" cy="19" r="3"/><path d="m8.6 13.5 6.8 4M15.4 6.5l-6.8 4"/>',
+  chat:'<path stroke-linecap="round" stroke-linejoin="round" d="M21 11.5a8.4 8.4 0 0 1-9 8.4 8.9 8.9 0 0 1-4-.9L3 21l1.9-4.9A8.4 8.4 0 0 1 12 3.1a8.4 8.4 0 0 1 9 8.4Z"/>',
+  trending:'<path stroke-linecap="round" stroke-linejoin="round" d="M3 17l6-6 4 4 8-8"/><path stroke-linecap="round" d="M15 7h6v6"/>',
+  box:'<path stroke-linecap="round" stroke-linejoin="round" d="M12 2.7 21 7.5v9l-9 4.7L3 16.5v-9Z"/><path stroke-linecap="round" stroke-linejoin="round" d="M3 7.5l9 4.8 9-4.8M12 12.3V21"/>',
+  users:'<circle cx="9" cy="8" r="3.5"/><path stroke-linecap="round" d="M2.5 20a6.5 6.5 0 0 1 13 0"/><path stroke-linecap="round" d="M16 4.6a3.5 3.5 0 0 1 0 6.8M17.5 14.4a6.5 6.5 0 0 1 4 5.6"/>',
+  receipt:'<path stroke-linecap="round" stroke-linejoin="round" d="M5 3h14v18l-2.3-1.5L14.4 21l-2.4-1.5L9.6 21l-2.3-1.5L5 21Z"/><path stroke-linecap="round" d="M9 8h6M9 12h6"/>',
+  sort:'<path stroke-linecap="round" stroke-linejoin="round" d="M8 4v16M8 20l-3-3M8 20l3-3M16 20V4M16 4l-3 3M16 4l3 3"/>',
+  eye:'<path stroke-linecap="round" stroke-linejoin="round" d="M2 12s3.5-7 10-7 10 7 10 7-3.5 7-10 7-10-7-10-7Z"/><circle cx="12" cy="12" r="3"/>',
+  clock:'<circle cx="12" cy="12" r="9"/><path stroke-linecap="round" stroke-linejoin="round" d="M12 7v5l3.5 2"/>',
+  calendar:'<rect x="3" y="5" width="18" height="16" rx="2"/><path stroke-linecap="round" d="M8 3v4M16 3v4M3 10h18"/>',
+  info:'<circle cx="12" cy="12" r="9"/><path stroke-linecap="round" d="M12 11v5M12 8h.01"/>',
+  sun:'<circle cx="12" cy="12" r="4"/><path stroke-linecap="round" d="M12 2v2M12 20v2M4.9 4.9l1.4 1.4M17.7 17.7l1.4 1.4M2 12h2M20 12h2M4.9 19.1l1.4-1.4M17.7 6.3l1.4-1.4"/>',
+  moon:'<path stroke-linecap="round" stroke-linejoin="round" d="M21 12.8A9 9 0 1 1 11.2 3a7 7 0 0 0 9.8 9.8Z"/>',
+  monitor:'<rect x="3" y="4" width="18" height="12" rx="2"/><path stroke-linecap="round" d="M8 20h8M12 16v4"/>',
+  sparkles:'<path stroke-linejoin="round" d="M9.5 3.5 11 8l4.5 1.5L11 11 9.5 15.5 8 11 3.5 9.5 8 8Z"/><path stroke-linejoin="round" d="M17.5 13.5 18.5 16l2.5 1-2.5 1-1 2.5-1-2.5-2.5-1 2.5-1Z"/>',
+  server:'<rect x="3" y="4" width="18" height="6.5" rx="1.6"/><rect x="3" y="13.5" width="18" height="6.5" rx="1.6"/><path stroke-linecap="round" d="M7 7.25h.01M7 16.75h.01"/><path stroke-linecap="round" d="M13 7.25h4M13 16.75h4"/>',
+  waveform:'<path stroke-linecap="round" d="M3 12h1.5M20.5 12H22M7 8v8M11 4.5v15M15 7v10M19 9.5v5"/>',
+  plug:'<path stroke-linecap="round" stroke-linejoin="round" d="M9 3v5M15 3v5M6.5 8h11l-.7 5.6a5 5 0 0 1-4.96 4.4h-.68a5 5 0 0 1-4.96-4.4L6.5 8Z"/><path stroke-linecap="round" d="M12 18v3"/>',
+};
+function ic(name, cls = 'w-4 h-4') {
+  return `<svg class="${cls}" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">${ICONS[name] || ICONS.info}</svg>`;
+}
+
+/* ═══════════════════════════════════════════════════════════
+   FAMI — living character (pure SVG + CSS, zero emoji)
+   States: idle · scanning · building · executing · success · speaking · error
+   ═══════════════════════════════════════════════════════════ */
+const FAMI_STATES = {
+  idle:      { label: 'Fami · Prêt' },
+  listening: { label: 'Je vous écoute…' },
+  scanning:  { label: 'Analyse de votre demande…' },
+  building:  { label: 'Je construis la requête…' },
+  executing: { label: 'Interrogation des données…' },
+  speaking:  { label: 'Fami formule la réponse…' },
+  success:   { label: 'Voici le résultat.' },
+  error:     { label: "Je n'ai pas pu exécuter cette requête." },
+};
+
+function famiFace({ size = 32, state = 'idle' } = {}) {
+  const u = 'hf' + Math.random().toString(36).slice(2, 8);
+  const err = state === 'error';
+  return `
+  <svg viewBox="0 0 64 64" width="${size}" height="${size}" class="fami-face ${state}" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
+    <defs>
+      <linearGradient id="${u}-head" x1="0" y1="0" x2="0.4" y2="1">
+        <stop offset="0%" stop-color="#7dd3fc"/>
+        <stop offset="38%" stop-color="#818cf8"/>
+        <stop offset="100%" stop-color="#5b21b6"/>
+      </linearGradient>
+      <radialGradient id="${u}-glow" cx="50%" cy="42%" r="55%">
+        <stop offset="0%" stop-color="${err ? '#fb7185' : '#a78bfa'}" stop-opacity=".55"/>
+        <stop offset="100%" stop-color="${err ? '#fb7185' : '#a78bfa'}" stop-opacity="0"/>
+      </radialGradient>
+      <radialGradient id="${u}-iris" cx="42%" cy="35%" r="70%">
+        <stop offset="0%" stop-color="#e0f2fe"/>
+        <stop offset="35%" stop-color="#5eead4"/>
+        <stop offset="100%" stop-color="#4f46e5"/>
+      </radialGradient>
+      <linearGradient id="${u}-core" x1="0" y1="0" x2="1" y2="1">
+        <stop offset="0%" stop-color="#fde68a"/>
+        <stop offset="100%" stop-color="#fb923c"/>
+      </linearGradient>
+      <linearGradient id="${u}-mouth" x1="0" y1="0" x2="1" y2="0">
+        <stop offset="0%" stop-color="#fdba74"/>
+        <stop offset="100%" stop-color="#fb7185"/>
+      </linearGradient>
+      <radialGradient id="${u}-sheen" cx="30%" cy="20%" r="45%">
+        <stop offset="0%" stop-color="#ffffff" stop-opacity=".55"/>
+        <stop offset="100%" stop-color="#ffffff" stop-opacity="0"/>
+      </radialGradient>
+    </defs>
+
+    <circle cx="32" cy="32" r="31" fill="url(#${u}-glow)" opacity=".65"/>
+
+    <g class="fami-head">
+      <!-- body — soft rounded squircle, not a robot head -->
+      <rect x="8" y="8" width="48" height="49" rx="22" fill="url(#${u}-head)"/>
+      <rect x="8" y="8" width="48" height="49" rx="22" fill="url(#${u}-sheen)"/>
+      <rect x="8.6" y="8.6" width="46.8" height="47.8" rx="21.4" fill="none" stroke="#ffffff" stroke-opacity=".18" stroke-width="1"/>
+
+      <!-- glossy highlight streak (personality flourish, not literal hair) -->
+      <path class="fami-hair" d="M15.5 17 C17 11.5 22.5 8.5 28.5 9.2" stroke="#ffffff" stroke-opacity=".38" stroke-width="3" fill="none" stroke-linecap="round"/>
+
+      <!-- sparkle accent — a little twinkle of life, not an antenna -->
+      <circle cx="49.5" cy="15.5" r="6.5" fill="url(#${u}-core)" opacity=".16"/>
+      <path class="fami-core" d="M49.5 10.8c.4 2 1 2.7 3.3 3.2-2.3.5-2.9 1.2-3.3 3.2-.4-2-1-2.7-3.3-3.2 2.3-.5 2.9-1.2 3.3-3.2Z" fill="url(#${u}-core)"/>
+
+      <path class="fami-brow fami-brow-l" d="M17.6 26.6 Q23 23.6 29 25.8" stroke="url(#${u}-mouth)" stroke-width="2.1" fill="none" stroke-linecap="round"/>
+      <path class="fami-brow fami-brow-r" d="M35 25.8 Q41 23.6 46.4 26.6" stroke="url(#${u}-mouth)" stroke-width="2.1" fill="none" stroke-linecap="round"/>
+
+      <g class="fami-eye">
+        <rect x="18.6" y="28.6" rx="5.4" ry="5.4" width="10.8" height="11.4" fill="#fdf4ff"/>
+        <g class="fami-pupil">
+          <circle cx="24" cy="34.6" r="3.35" fill="url(#${u}-iris)"/>
+          <circle cx="24" cy="34.6" r="1.5" fill="#1e1b4b"/>
+          <circle cx="25.1" cy="33.4" r=".85" fill="#ffffff" opacity=".95"/>
+        </g>
+      </g>
+      <g class="fami-eye">
+        <rect x="34.6" y="28.6" rx="5.4" ry="5.4" width="10.8" height="11.4" fill="#fdf4ff"/>
+        <g class="fami-pupil">
+          <circle cx="40" cy="34.6" r="3.35" fill="url(#${u}-iris)"/>
+          <circle cx="40" cy="34.6" r="1.5" fill="#1e1b4b"/>
+          <circle cx="41.1" cy="33.4" r=".85" fill="#ffffff" opacity=".95"/>
+        </g>
+      </g>
+      <path class="fami-eye-happy" d="M18.6 35.4 Q24 29.6 29.4 35.4" stroke="#fdf4ff" stroke-width="2.3" fill="none" stroke-linecap="round"/>
+      <path class="fami-eye-happy" d="M34.6 35.4 Q40 29.6 45.4 35.4" stroke="#fdf4ff" stroke-width="2.3" fill="none" stroke-linecap="round"/>
+
+      <ellipse class="fami-cheek" cx="17.8" cy="41.6" rx="3.3" ry="1.9" fill="#fb7185" opacity=".28"/>
+      <ellipse class="fami-cheek" cx="46.2" cy="41.6" rx="3.3" ry="1.9" fill="#fb7185" opacity=".28"/>
+
+      <path class="fami-mouth fami-mouth-smile" d="M25 46.6 Q32 51.8 39 46.6" stroke="url(#${u}-mouth)" stroke-width="2.1" fill="none" stroke-linecap="round"/>
+      <g class="fami-mouth fami-mouth-open">
+        <ellipse cx="32" cy="47.6" rx="4.2" ry="3.1" fill="#2d1b4e"/>
+        <ellipse cx="32" cy="49" rx="2.3" ry="1.2" fill="#fb7185" opacity=".9"/>
+      </g>
+      <g class="fami-mouth fami-mouth-big">
+        <path d="M23 45 Q32 55.5 41 45 Q32 50.4 23 45 Z" fill="#fff7ed"/>
+        <path d="M23 45 Q32 55.5 41 45" stroke="url(#${u}-mouth)" stroke-width="2" fill="none" stroke-linecap="round"/>
+      </g>
+      <path class="fami-mouth fami-mouth-flat" d="M27 47.4 H37" stroke="url(#${u}-mouth)" stroke-width="2.1" fill="none" stroke-linecap="round"/>
+      <path class="fami-mouth fami-mouth-hmm" d="M27 47.6 Q32 46.4 37 47.6" stroke="url(#${u}-mouth)" stroke-width="2.1" fill="none" stroke-linecap="round"/>
+      <path class="fami-mouth fami-mouth-frown" d="M25.4 49.6 Q32 45 38.6 49.6" stroke="url(#${u}-mouth)" stroke-width="2.1" fill="none" stroke-linecap="round"/>
+    </g>
+
+    <g class="fami-sweat">
+      <path d="M49.5 24 L49.5 27" stroke="#7dd3fc" stroke-width="1.8" stroke-linecap="round"/>
+      <circle cx="49.5" cy="29.4" r="2.1" fill="#7dd3fc"/>
+    </g>
+  </svg>`;
+}
+
+/* ═══════════════════════════════════════════════════════════
+   Utilities
+   ═══════════════════════════════════════════════════════════ */
+const $  = (s, r = document) => r.querySelector(s);
+const $$ = (s, r = document) => [...r.querySelectorAll(s)];
+const uid = () => Math.random().toString(36).slice(2, 10);
+const sleep = ms => new Promise(r => setTimeout(r, ms));
+const escapeHtml = s => String(s).replace(/[&<>"]/g, c =>
+  ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' }[c]));
+
+function formatBytes(n) {
+  if (n == null) return '';
+  const u = ['B','KB','MB','GB','TB'];
+  let i = 0;
+  while (n >= 1024 && i < u.length - 1) { n /= 1024; i++; }
+  return `${n < 10 && i > 0 ? n.toFixed(1) : Math.round(n)} ${u[i]}`;
+}
+
+function fileIcon(name = '', type = '') {
+  const ext = (name.split('.').pop() || '').toLowerCase();
+  if (type.startsWith('image/') || ['png','jpg','jpeg','gif','webp','svg','bmp','ico'].includes(ext)) return 'image';
+  if (type === 'application/pdf' || ext === 'pdf') return 'fileText';
+  if (type.startsWith('video/')) return 'monitor';
+  if (type.startsWith('audio/')) return 'mic';
+  if (['zip','rar','7z','tar','gz'].includes(ext)) return 'box';
+  if (['js','ts','jsx','tsx','py','rb','go','rs','java','c','cpp','h','css','html','json','yml','yaml','sh','sql','md'].includes(ext)) return 'terminal';
+  if (['doc','docx','txt','rtf','odt'].includes(ext)) return 'fileText';
+  if (['xls','xlsx','csv','ods'].includes(ext)) return 'table';
+  if (ext === 'pptx' || ext === 'ppt') return 'monitor';
+  return 'fileText';
+}
+
+/* ═══════════════════════════════════════════════════════════
+   Sound effects (WebAudio, no assets)
+   ═══════════════════════════════════════════════════════════ */
+let actx = null;
+function tone(freq, dur = .08, type = 'sine', gain = .045, delay = 0) {
+  if (!settings.sounds) return;
+  try {
+    actx = actx || new (window.AudioContext || window.webkitAudioContext)();
+    const t = actx.currentTime + delay;
+    const o = actx.createOscillator();
+    const g = actx.createGain();
+    o.type = type; o.frequency.value = freq;
+    g.gain.setValueAtTime(gain, t);
+    g.gain.exponentialRampToValueAtTime(.0001, t + dur);
+    o.connect(g); g.connect(actx.destination);
+    o.start(t); o.stop(t + dur + .02);
+  } catch (_) {}
+}
+const sfx = {
+  send:     () => tone(540, .07),
+  receive:  () => { tone(660, .06); tone(920, .09, 'sine', .04, .07); },
+  pop:      () => tone(320, .05),
+  success:  () => [523, 659, 784].forEach((f, i) => tone(f, .12, 'sine', .04, i * .09)),
+  error:    () => { tone(220, .16, 'sawtooth', .04); tone(155, .22, 'sawtooth', .04, .13); },
+  open:     () => tone(760, .05, 'sine', .03),
+};
+
+/* ═══════════════════════════════════════════════════════════
+   Text-to-speech
+   ═══════════════════════════════════════════════════════════ */
+let ttsMsgId = null;
+function stripMd(src) {
+  return String(src)
+    .replace(/```[\s\S]*?```/g, ' code block. ')
+    .replace(/[#*>`|-]/g, ' ')
+    .replace(/\[(.*?)\]\(.*?\)/g, '$1')
+    .replace(/\s+/g, ' ')
+    .trim();
+}
+function speak(text, msgId, onEnd) {
+  if (!('speechSynthesis' in window)) { if (onEnd) onEnd(); return toast('Speech synthesis not supported'); }
+  stopSpeak();
+  const u = new SpeechSynthesisUtterance(stripMd(text));
+  u.lang = 'en-US'; u.rate = 1; u.pitch = 1;
+  u.onend = u.onerror = () => { ttsMsgId = null; syncTtsButtons(); if (onEnd) onEnd(); };
+  ttsMsgId = msgId;
+  speechSynthesis.speak(u);
+  syncTtsButtons();
+  if (voiceModeOpen) setFamiStatus('speaking');
+}
+function stopSpeak() {
+  if ('speechSynthesis' in window) speechSynthesis.cancel();
+  ttsMsgId = null;
+  syncTtsButtons();
+}
+function syncTtsButtons() {
+  $$('[data-act="tts"]').forEach(b => {
+    const active = b.dataset.mid === ttsMsgId;
+    b.classList.toggle('text-fam-500', active);
+    b.innerHTML = ic(active ? 'volumeX' : 'volume', 'w-3.5 h-3.5');
+  });
+}
+
+/* ═══════════════════════════════════════════════════════════
+   SQL highlighting + markdown renderer
+   ═══════════════════════════════════════════════════════════ */
+function highlightSQL(src) {
+  const KW = /\b(SELECT|FROM|WHERE|INNER|LEFT|RIGHT|JOIN|ON|GROUP|BY|ORDER|LIMIT|TOP|AS|AND|OR|NOT|IN|IS|NULL|DESC|ASC|COUNT|SUM|AVG|MAX|MIN|BETWEEN|LIKE|CASE|WHEN|THEN|ELSE|END|DISTINCT|HAVING|UNION|ALL|OVER|PARTITION|WITH|CONVERT|CAST|DATEADD|DATEDIFF|GETDATE)\b/gi;
+  let out = escapeHtml(src);
+  out = out.replace(/(--[^\n]*)/g, '<span class="sql-cm">$1</span>');
+  out = out.replace(/'([^'\n]*)'/g, '<span class="sql-str">\'$1\'</span>');
+  out = out.replace(KW, m => `<span class="sql-kw">${m.toUpperCase()}</span>`);
+  out = out.replace(/\b(\d+(?:\.\d+)?)\b/g, '<span class="sql-num">$1</span>');
+  return out;
+}
+
+function buildCodeBlock({ lang, code }) {
+  const highlighted = lang === 'sql' ? highlightSQL(code)
+    : escapeHtml(code).replace(/\b(\d+(?:\.\d+)?)\b/g, '<span class="sql-num">$1</span>');
+  return `<div class="my-3 rounded-xl overflow-hidden border border-zinc-200 dark:border-white/10 bg-zinc-50 dark:bg-[#0a1513] shadow-sm">
+    <div class="flex items-center justify-between px-3.5 py-2 border-b border-zinc-200 dark:border-white/[0.07] bg-zinc-100/70 dark:bg-white/[0.03]">
+      <span class="text-[10px] font-mono uppercase tracking-widest text-zinc-500 dark:text-zinc-400">${escapeHtml(lang)}</span>
+      <button data-copy class="text-[11px] font-medium px-2 py-0.5 rounded-md text-zinc-500 dark:text-zinc-400 hover:text-fam-600 dark:hover:text-fam-400 hover:bg-zinc-200/70 dark:hover:bg-white/10 transition">Copy</button>
+    </div>
+    <pre class="p-4 overflow-x-auto text-[12.5px] leading-relaxed"><code class="font-mono text-zinc-800 dark:text-zinc-200">${highlighted}</code></pre>
+  </div>`;
+}
+
+function renderMarkdown(src) {
+  if (!src) return '';
+  const codes = [];
+  const re = /```(\w*)\n?([\s\S]*?)(?:```|$)/g;
+  let text = String(src).replace(re, (_m, lang, code) => {
+    codes.push({ lang: lang || 'text', code: code.replace(/\n+$/, '') });
+    return '\n@@CODE' + (codes.length - 1) + '@@\n';
+  });
+
+  // markdown tables
+  const rows = [];
+  text = text.split('\n').map(line => {
+    if (/^\|.+\|$/.test(line.trim())) {
+      rows.push(line.trim());
+      return null;
+    }
+    return line;
+  }).filter(l => l !== null).join('\n');
+
+  text = escapeHtml(text);
+  text = text.replace(/`([^`\n]+)`/g, '<code>$1</code>');
+  text = text.replace(/\*\*([\s\S]+?)\*\*/g, '<strong>$1</strong>');
+  text = text.replace(/(^|[^*])\*([^*\n]+)\*(?!\*)/g, '$1<em>$2</em>');
+  text = text.replace(/\[([^\]]+)\]\((https?:[^)\s]+)\)/g,
+    '<a href="$2" target="_blank" rel="noopener" class="text-fam-600 dark:text-fam-400 underline decoration-fam-500/30 hover:decoration-fam-500">$1</a>');
+
+  const lines = text.split('\n');
+  let html = '';
+  let list = null;
+  const closeList = () => { if (list) { html += list === 'ul' ? '</ul>' : '</ol>'; list = null; } };
+
+  for (const raw of lines) {
+    const line = raw.trim();
+    if (!line) { closeList(); continue; }
+    if (/^@@CODE\d+@@$/.test(line)) { closeList(); html += line; continue; }
+    const h = line.match(/^(#{1,3})\s+(.*)$/);
+    if (h) {
+      closeList();
+      const lvl = h[1].length + 2;
+      const size = { 3:'text-lg', 4:'text-base', 5:'text-sm' }[lvl] || 'text-base';
+      html += `<h${lvl} class="${size} font-semibold tracking-tight mt-4 mb-1.5 text-zinc-900 dark:text-slate-100">${h[2]}</h${lvl}>`;
+      continue;
+    }
+    const bq = line.match(/^&gt;\s?(.*)$/);
+    if (bq) { closeList(); html += `<blockquote>${bq[1]}</blockquote>`; continue; }
+    const ul = line.match(/^[-*]\s+(.*)$/);
+    if (ul) { if (list !== 'ul') { closeList(); html += '<ul>'; list = 'ul'; } html += `<li>${ul[1]}</li>`; continue; }
+    const ol = line.match(/^\d+\.\s+(.*)$/);
+    if (ol) { if (list !== 'ol') { closeList(); html += '<ol>'; list = 'ol'; } html += `<li>${ol[1]}</li>`; continue; }
+    closeList();
+    html += `<p>${line}</p>`;
+  }
+  closeList();
+
+  if (rows.length >= 2) {
+    const parse = r => r.slice(1, -1).split('|').map(c => c.trim());
+    const header = parse(rows[0]);
+    const bodyRows = rows.slice(1).filter(r => !/^\|[\s:-]+\|$/.test(r.replace(/\|/g, m => m).replace(/[^|\s:-]/g, '')));
+    const tableHtml = `<table><thead><tr>${header.map(h => `<th>${h}</th>`).join('')}</tr></thead><tbody>${
+      bodyRows.map(r => `<tr>${parse(r).map(c => `<td>${c}</td>`).join('')}</tr>`).join('')}</tbody></table>`;
+    html += tableHtml;
+  }
+
+  return html.replace(/@@CODE(\d+)@@/g, (_m, i) => buildCodeBlock(codes[+i]));
+}
+
+/* ═══════════════════════════════════════════════════════════
+   Canvas charts — bar & line, no dependencies
+   ═══════════════════════════════════════════════════════════ */
+function drawChart(canvas, labels, values, type = 'bar') {
+  const dpr = window.devicePixelRatio || 1;
+  const W = canvas.clientWidth || 520, H = 180;
+  canvas.width = W * dpr; canvas.height = H * dpr;
+  const ctx = canvas.getContext('2d');
+  ctx.scale(dpr, dpr);
+  const dark = document.documentElement.classList.contains('dark');
+  const textCol = dark ? '#a1a1aa' : '#71717a';
+  const gridCol = dark ? 'rgba(255,255,255,.06)' : 'rgba(0,0,0,.06)';
+  const max = Math.max(...values, 1);
+  const padL = 8, padB = 26, padT = 14;
+  const cw = W - padL * 2, ch = H - padB - padT;
+
+  ctx.strokeStyle = gridCol; ctx.lineWidth = 1;
+  for (let i = 0; i <= 3; i++) {
+    const y = padT + ch - (ch * i / 3);
+    ctx.beginPath(); ctx.moveTo(padL, y); ctx.lineTo(W - padL, y); ctx.stroke();
+  }
+  const xAt = i => padL + cw * (i + 0.5) / values.length;
+  const yAt = v => padT + ch - ch * v / max;
+
+  if (type === 'line') {
+    const grad = ctx.createLinearGradient(0, padT, 0, padT + ch);
+    grad.addColorStop(0, 'rgba(45,212,191,.28)');
+    grad.addColorStop(1, 'rgba(45,212,191,0)');
+    ctx.beginPath();
+    values.forEach((v, i) => { const x = xAt(i), y = yAt(v); i ? ctx.lineTo(x, y) : ctx.moveTo(x, y); });
+    ctx.strokeStyle = '#2dd4bf'; ctx.lineWidth = 2; ctx.lineJoin = 'round'; ctx.stroke();
+    ctx.lineTo(xAt(values.length - 1), padT + ch); ctx.lineTo(xAt(0), padT + ch); ctx.closePath();
+    ctx.fillStyle = grad; ctx.fill();
+    values.forEach((v, i) => {
+      ctx.beginPath(); ctx.arc(xAt(i), yAt(v), 3, 0, Math.PI * 2);
+      ctx.fillStyle = '#0d9488'; ctx.fill();
+      ctx.strokeStyle = dark ? '#0D1B19' : '#fff'; ctx.lineWidth = 1.5; ctx.stroke();
+    });
+  } else {
+    const bw = Math.min(56, cw / values.length * 0.55);
+    values.forEach((v, i) => {
+      const x = xAt(i) - bw / 2, h = Math.max(3, ch * v / max), y = padT + ch - h;
+      const g = ctx.createLinearGradient(0, y, 0, y + h);
+      g.addColorStop(0, 'rgba(45,212,191,.95)');
+      g.addColorStop(1, 'rgba(13,148,136,.55)');
+      ctx.fillStyle = g;
+      ctx.beginPath(); ctx.roundRect(x, y, bw, h, [5, 5, 0, 0]); ctx.fill();
+    });
+  }
+  ctx.fillStyle = textCol;
+  ctx.font = '10px Inter, sans-serif';
+  ctx.textAlign = 'center';
+  values.forEach((v, i) => {
+    ctx.fillText(labels[i], xAt(i), H - 8);
+    ctx.fillText(v >= 1000 ? (v / 1000).toFixed(1) + 'k' : v, xAt(i), yAt(v) - 6);
+  });
+}
+
+/* ═══════════════════════════════════════════════════════════
+   Data — models, suggestions, reasoning steps, demo answers
+   ═══════════════════════════════════════════════════════════ */
+const MODELS = [
+  { id:'fami',       name:'Fami',        desc:'Default · business-tuned (Qwen 3 14B)', glyph:'F', grad:'from-fam-500 to-fam-700',     badge:'Default' },
+  { id:'fami-pro',   name:'Fami Pro',    desc:'Deeper reasoning for complex queries',  glyph:'F', grad:'from-fam-600 to-fam-800',     badge:null },
+  { id:'fami-vision',name:'Fami Vision', desc:'Reads invoices, PDFs & documents',      glyph:'V', grad:'from-cyan-500 to-teal-600',   badge:null },
+  { id:'qwen-14b',   name:'Qwen 3 14B',  desc:'On-premise · FAMASSER hosted',          glyph:'Q', grad:'from-fam-500 to-emerald-700', badge:null },
+  { id:'sql-copilot',name:'Copilot SAP', desc:'Text-to-SQL only · schema-locked',      glyph:'S', grad:'from-slate-500 to-slate-700', badge:null },
+];
+
+const SUGGESTIONS = [
+  { icon:'trending', title:'Sales overview',     sub:'Show today\u2019s sales vs. yesterday', prompt:'Show me today\u2019s sales figures compared to yesterday.' },
+  { icon:'box',      title:'Inventory check',    sub:'Low-stock and out-of-stock items',      prompt:'Which products are currently low in stock or out of stock?' },
+  { icon:'users',    title:'Top customers',      sub:'Best buyers this month',                prompt:'List our top 10 customers by purchase volume this month.' },
+  { icon:'receipt',  title:'Purchases analysis', sub:'Supplier spend & trends',               prompt:'Analyze our purchase orders from suppliers this quarter.' },
+];
+
+/* Each step carries the FAMI expression state it should show */
+const REASONING_STEPS = [
+  { label: 'Analyse de votre demande',        state: 'scanning'  },
+  { label: 'Lecture du schéma ERP',           state: 'scanning'  },
+  { label: 'Construction de la requête',      state: 'building'  },
+  { label: 'Validation SQL',                  state: 'building'  },
+  { label: 'Interrogation des données',       state: 'executing' },
+];
+
+const DEMO_RESPONSES = [
+{
+  content: `I found **1,284 active products** with available stock.
+
+**Total stock on hand:** 18,492 units · **Low-stock:** 73 · **Out-of-stock:** 21
+
+The three items with the highest risk of stockout are:
+
+1. **Product A-1024** — 2 units remaining
+2. **Product B-2087** — 4 units remaining
+3. **Product C-3311** — 6 units remaining
+
+Would you like me to break this down by product category, or export the low-stock list?`,
+  followups: ['Break down by category', 'Export low-stock list as CSV', 'Show out-of-stock only'],
+  sql: `-- Low & out-of-stock items across all warehouses
+SELECT T0.[ItemCode], T0.[ItemName],
+       T1.[OnHand], T0.[MinLevel]
+FROM [OITM] T0
+INNER JOIN [OITW] T1 ON T0.[ItemCode] = T1.[ItemCode]
+WHERE T0.[frozenFor] = 'N'
+  AND T1.[OnHand] <= T0.[MinLevel]
+ORDER BY T1.[OnHand] ASC`,
+  meta: { database:'SQL Server · FAMASSER ERP', tables:['OITM','OITW'], confidence:'High', rows:1284,
+    columns: ['ItemCode','ItemName','OnHand','MinLevel'],
+    rowsData: [
+      ['A-1024','Steel Bracket M8', 2, 20],
+      ['B-2087','Hydraulic Seal 45', 4, 15],
+      ['C-3311','Bearing 6204-2RS', 6, 25],
+      ['D-4402','Belt V-B-1200', 9, 30],
+      ['E-5180','Grease Cartridge 400g', 12, 40],
+    ] },
+  chart: { labels:['A-1024','B-2087','C-3311','D-4402','E-5180'], values:[2,4,6,9,12], title:'Units on hand (lowest)' },
+},
+{
+  content: `Here's **today's sales performance** compared to yesterday.
+
+| Metric | Today | Yesterday | Change |
+|---|---|---|---|
+| Revenue | 142,380 MAD | 128,910 MAD | **+10.4%** |
+| Orders  | 87 | 79 | +10.1% |
+| Avg. basket | 1,637 MAD | 1,632 MAD | +0.3% |
+
+Sales are trending **up**, driven mainly by the **retail channel (+18%)**.
+
+Would you like the breakdown by product family or by salesperson?`,
+  followups: ['Breakdown by product family', 'Breakdown by salesperson', 'Compare with last week'],
+  sql: `-- Revenue & orders: today vs yesterday
+SELECT CONVERT(date, T0.[DocDate]) AS [Day],
+       SUM(T0.[DocTotal])          AS [Revenue],
+       COUNT(*)                    AS [Orders],
+       AVG(T0.[DocTotal])          AS [AvgBasket]
+FROM [ORDR] T0
+WHERE T0.[DocDate] >= CAST(GETDATE()-1 AS date)
+  AND T0.[CANCELED] = 'N'
+GROUP BY CONVERT(date, T0.[DocDate])
+ORDER BY [Day] DESC`,
+  meta: { database:'SQL Server · FAMASSER ERP', tables:['ORDR','RDR1','OCRD'], confidence:'High', rows:87,
+    columns: ['Channel','Revenue (MAD)','Orders'],
+    rowsData: [
+      ['Retail', 82100, 41],
+      ['Wholesale', 38500, 22],
+      ['E-commerce', 16400, 18],
+      ['B2B contracts', 5380, 6],
+    ] },
+  chart: { labels:['Retail','Wholesale','E-comm','B2B'], values:[82100,38500,16400,5380], title:'Revenue by channel today' },
+},
+{
+  content: `Our **top 5 customers** by purchase volume this month:
+
+1. **Atlas Distribution SARL** — 318,420 MAD · 42 orders
+2. **Maroc Retail Group** — 274,115 MAD · 31 orders
+3. **Casablanca Wholesale** — 198,780 MAD · 28 orders
+4. **Nord Commerce** — 156,290 MAD · 19 orders
+5. **Rabat Trade Co.** — 141,050 MAD · 22 orders
+
+Together they represent **62% of monthly revenue**. I can also show month-over-month growth per customer if useful.`,
+  followups: ['Month-over-month growth', 'Show order counts only', 'Export as CSV'],
+  sql: `-- Top customers this month by revenue
+SELECT TOP 5
+       T1.[CardName]               AS [Customer],
+       SUM(T0.[DocTotal])          AS [Revenue],
+       COUNT(*)                    AS [Orders]
+FROM [ORDR] T0
+INNER JOIN [OCRD] T1 ON T0.[CardCode] = T1.[CardCode]
+WHERE T0.[DocDate] >= DATEADD(month, DATEDIFF(month, 0, GETDATE()), 0)
+  AND T0.[CANCELED] = 'N'
+GROUP BY T1.[CardName]
+ORDER BY [Revenue] DESC`,
+  meta: { database:'SQL Server · FAMASSER ERP', tables:['OCRD','ORDR'], confidence:'High', rows:5,
+    columns: ['Customer','Revenue (MAD)','Orders'],
+    rowsData: [
+      ['Atlas Distribution SARL', 318420, 42],
+      ['Maroc Retail Group', 274115, 31],
+      ['Casablanca Wholesale', 198780, 28],
+      ['Nord Commerce', 156290, 19],
+      ['Rabat Trade Co.', 141050, 22],
+    ] },
+  chart: { labels:['Atlas','Maroc R.','Casa W.','Nord C.','Rabat T.'], values:[318,274,199,156,141], title:'Revenue by customer (k MAD)' },
+},
+];
+
+const ERROR_RESPONSE = {
+  error: true,
+  content: `**Query failed at the validation step.**
+
+\`Timeout expired — the reporting replica took longer than 30 s to respond.\`
+
+Nothing was modified in your database. You can:
+
+- **Retry** the same question — transient load peaks happen
+- Narrow the scope (add a date range, warehouse or product family)
+- Ask me to run it against last night's snapshot instead`,
+  followups: ['Retry', 'Run against nightly snapshot', 'Check connection status'],
+  sql: `-- Attempt log · failed after 30 024 ms
+SELECT CONVERT(date, T0.[DocDate]) AS [Day], SUM(T0.[DocTotal]) AS [Revenue]
+FROM [ORDR] T0
+WHERE T0.[DocDate] >= '2024-01-01'
+GROUP BY CONVERT(date, T0.[DocDate])
+ORDER BY [Day] DESC`,
+  meta: { database:'SQL Server · FAMASSER ERP', tables:['ORDR'], confidence:'Low', rows:0, failed:true },
+};
+
+const SCHEMA_TABLES = [
+  { name:'OITM', desc:'Items / products master', rows:'12 480', group:'Sales',
+    columns:[['ItemCode','nvarchar(20)','PK'],['ItemName','nvarchar(100)',''],['ItmsGrpCod','int','→ OITB'],['MinLevel','numeric',''],['frozenFor','char(1)','']] },
+  { name:'OITW', desc:'Stock per warehouse', rows:'49 920', group:'Inventory',
+    columns:[['ItemCode','nvarchar(20)','PK'],['WhsCode','nvarchar(8)','PK'],['OnHand','numeric',''],['IsCommited','numeric',''],['OnOrder','numeric','']] },
+  { name:'OCRD', desc:'Business partners (customers & suppliers)', rows:'3 214', group:'Sales',
+    columns:[['CardCode','nvarchar(15)','PK'],['CardName','nvarchar(100)',''],['CardType','char(1)','C / S'],['Balance','numeric','']] },
+  { name:'ORDR', desc:'Sales orders header', rows:'86 114', group:'Sales',
+    columns:[['DocEntry','int','PK'],['DocNum','int',''],['CardCode','nvarchar(15)','→ OCRD'],['DocDate','datetime',''],['DocTotal','numeric',''],['CANCELED','char(1)','']] },
+  { name:'RDR1', desc:'Sales order lines', rows:'412 660', group:'Sales',
+    columns:[['DocEntry','int','PK'],['LineNum','int','PK'],['ItemCode','nvarchar(20)','→ OITM'],['Quantity','numeric',''],['LineTotal','numeric','']] },
+  { name:'OPOR', desc:'Purchase orders header', rows:'31 908', group:'Purchasing',
+    columns:[['DocEntry','int','PK'],['CardCode','nvarchar(15)','→ OCRD (supplier)'],['DocDate','datetime',''],['DocTotal','numeric','']] },
+  { name:'OINV', desc:'A/R invoices', rows:'78 402', group:'Finance',
+    columns:[['DocEntry','int','PK'],['DocNum','int',''],['CardCode','nvarchar(15)',''],['DocTotal','numeric',''],['PaidToDate','numeric','']] },
+  { name:'OSLP', desc:'Sales employees / agents', rows:'42', group:'HR',
+    columns:[['SlpCode','int','PK'],['SlpName','nvarchar(50)',''],['Active','char(1)','']] },
+  { name:'OWHS', desc:'Warehouses', rows:'4', group:'Inventory',
+    columns:[['WhsCode','nvarchar(8)','PK'],['WhsName','nvarchar(50)',''],['Location','nvarchar(50)','']] },
+];
+
+const DEFAULT_PROMPTS = [
+  { title:'Daily sales pulse',    text:'Show me today\u2019s sales figures compared to yesterday, broken down by channel.' },
+  { title:'Stock risk radar',     text:'Which products are currently low in stock or out of stock? Rank by urgency.' },
+  { title:'VIP customers',        text:'List our top 10 customers by purchase volume this month with order counts.' },
+  { title:'Supplier spend',       text:'Analyze our purchase orders from suppliers this quarter: totals, trends, biggest suppliers.' },
+  { title:'Dead stock',           text:'Find items with no sales in the last 90 days but positive stock on hand.' },
+  { title:'Month-end close',      text:'Give me a summary of revenue, orders and average basket for the current month vs last month.' },
+];
+
+/* ═══════════════════════════════════════════════════════════
+   State + persistence
+   ═══════════════════════════════════════════════════════════ */
+const settings = {
+  theme: 'dark', fontSize: 14.5, sounds: true, autoTTS: false,
+  enterSend: true, followups: true,
+  // Forward-compatible hooks for the real Copilot SAP backend integration.
+  // Nothing here calls a live API yet — values are just persisted so the
+  // eventual backend wiring has a ready-made config surface.
+  sapEnabled: false,
+  sap: { env: 'onprem', serviceLayerUrl: '', companyDb: '', username: '' },
+};
+
+let state = {
+  chats: [], activeId: null, model: MODELS[0],
+  generating: false, abort: false, filter: '',
+  attachments: [], prompts: [], history: [], stats: { queries: 0, messages: 0 },
+};
+
+const store = {
+  KEY: 'famasser.intelligence.v2',
+  load() {
+    try {
+      const raw = localStorage.getItem(this.KEY);
+      if (!raw) return null;
+      const d = JSON.parse(raw);
+      if (d.settings) Object.assign(settings, d.settings);
+      if (Array.isArray(d.prompts)) state.prompts = d.prompts;
+      if (Array.isArray(d.history)) state.history = d.history;
+      if (d.stats) Object.assign(state.stats, d.stats);
+      return d;
+    } catch (_) { return null; }
+  },
+  save() {
+    try {
+      localStorage.setItem(this.KEY, JSON.stringify({
+        chats: state.chats, activeId: state.activeId,
+        settings, prompts: state.prompts, history: state.history.slice(-60),
+        stats: state.stats,
+      }));
+    } catch (_) {}
+  },
+  clear() { try { localStorage.removeItem(this.KEY); localStorage.removeItem('famasser.theme'); } catch (_) {} },
+};
+
+/* ═══════════════════════════════════════════════════════════
+   DOM refs
+   ═══════════════════════════════════════════════════════════ */
+const els = {};
+['sidebarWrap','backdrop','chatList','sideStats','connPill','dbDot','dbMode','messages','chatScroll',
+ 'input','sendBtn','stopBtn','charCount','scrollBtn','modelBtn','modelMenu','modelName','modelGlyph',
+ 'moreBtn','moreMenu','findBtn','findBar','findInput','findPrev','findNext','findCount','findClose',
+ 'zenBtn','zenExit','genProgress','palette','paletteInput','paletteList','toastWrap','attachments',
+ 'fileInput','folderInput','dropOverlay','statusDot','statusText','latText','slashPopup','slashList',
+ 'micBtn','drawer','drawerBackdrop','drawerTitle','drawerIcon','drawerBody','drawerClose',
+ 'settingsModal','settingsBackdrop','settingsBody','settingsClose','settingsSave','settingsReset',
+ 'confirmModal','confirmTitle','confirmBody','confirmIcon','confirmOk','confirmCancel',
+ 'newChatBtn','searchChats','collapseBtn','desktopToggle','menuBtn','themeBtn','shareBtn','printBtn',
+ 'cmdkHint','voiceHint','toolsBtn','attachBtn','folderBtn','brandFace','headerFace','toolsNav',
+ 'voiceModeBtn','voiceMode','voiceCloseBtn','voiceFace','voiceAuraGlow','voiceBars','voiceStatusLabel',
+ 'voiceCaption','voiceMuteBtn','voiceMicBtn','voiceTextModeBtn','sapNavDot',
+].forEach(id => els[id] = document.getElementById(id));
+
+/* ═══════════════════════════════════════════════════════════
+   Toasts
+   ═══════════════════════════════════════════════════════════ */
+function toast(msg, type = 'info') {
+  const colors = { info:'bg-zinc-900 dark:bg-white dark:text-zinc-900', ok:'bg-fam-700 text-white', err:'bg-rose-600 text-white' };
+  const el = document.createElement('div');
+  el.className = `pointer-events-auto px-4 py-2.5 rounded-xl text-[13px] font-medium text-white shadow-2xl animate-popIn ${colors[type] || colors.info}`;
+  el.textContent = msg;
+  els.toastWrap.appendChild(el);
+  setTimeout(() => { el.style.transition = 'all .3s'; el.style.opacity = '0'; el.style.transform = 'translateY(6px)'; setTimeout(() => el.remove(), 320); }, 2100);
+}
+
+/* ═══════════════════════════════════════════════════════════
+   Confirm dialog (promise-based)
+   ═══════════════════════════════════════════════════════════ */
+function confirmDlg({ title, body, okText = 'Delete' }) {
+  return new Promise(resolve => {
+    els.confirmTitle.textContent = title;
+    els.confirmBody.textContent = body;
+    els.confirmOk.textContent = okText;
+    els.confirmModal.classList.remove('hidden');
+    const done = v => { els.confirmModal.classList.add('hidden'); resolve(v); };
+    els.confirmOk.onclick = () => done(true);
+    els.confirmCancel.onclick = () => done(false);
+    els.confirmModal.querySelector('.absolute').onclick = () => done(false);
+  });
+}
+
+/* ═══════════════════════════════════════════════════════════
+   FAMI status + per-message face
+   ═══════════════════════════════════════════════════════════ */
+let lastFamiState = 'idle';
+function setFamiStatus(s) {
+  lastFamiState = s;
+  const cfg = FAMI_STATES[s] || FAMI_STATES.idle;
+  els.statusText.textContent = cfg.label;
+  const dot = { idle:'bg-fam-400', listening:'bg-sky-400', scanning:'bg-amber-400', building:'bg-violet-400',
+                executing:'bg-sky-400', speaking:'bg-fam-400', success:'bg-fam-400', error:'bg-rose-500' }[s] || 'bg-fam-400';
+  els.statusDot.className = `w-1.5 h-1.5 rounded-full ${dot} ${s !== 'idle' ? 'animate-pulse' : ''}`;
+  els.headerFace.innerHTML = famiFace({ size: 30, state: s });
+  if (typeof updateVoiceFace === 'function') updateVoiceFace(s, cfg.label);
+}
+function setMsgFace(msg, s) {
+  msg.face = s;
+  const node = els.messages.querySelector(`[data-mid="${msg.id}"] [data-facewrap]`);
+  if (node) node.innerHTML = famiFace({ size: 32, state: s });
+}
+
+/* ═══════════════════════════════════════════════════════════
+   Sidebar
+   ═══════════════════════════════════════════════════════════ */
+function renderSidebar() {
+  const q = state.filter.toLowerCase();
+  const list = state.chats.filter(c => !q || c.title.toLowerCase().includes(q));
+
+  if (!list.length) {
+    els.chatList.innerHTML = `<div class="px-3 py-8 text-center"><p class="text-[12px] text-zinc-400">No conversations found</p></div>`;
+  } else {
+    els.chatList.innerHTML = list.map(c => {
+      const active = c.id === state.activeId;
+      return `
+      <div data-chat="${c.id}" role="button" tabindex="0" title="Double-click to rename"
+           class="group relative flex items-center gap-2.5 px-2.5 py-2 rounded-xl cursor-pointer transition-all duration-150
+                  ${active ? 'bg-fam-500/10 dark:bg-fam-500/[0.12] text-fam-700 dark:text-fam-300'
+                           : 'text-zinc-600 dark:text-zinc-400 hover:bg-zinc-100 dark:hover:bg-white/[0.05] hover:text-zinc-900 dark:hover:text-zinc-200'}">
+        ${active ? '<span class="absolute left-0 top-1/2 -translate-y-1/2 w-[3px] h-5 rounded-r-full bg-fam-500"></span>' : ''}
+        ${ic('chat', 'w-3.5 h-3.5 shrink-0 opacity-60')}
+        <span class="flex-1 min-w-0 text-[13px] font-medium truncate">${escapeHtml(c.title)}</span>
+        ${c.pinned ? `<span class="text-fam-500 shrink-0">${ic('pin','w-3 h-3')}</span>` : ''}
+        <span class="text-[10px] tabular-nums opacity-0 group-hover:opacity-100 transition-opacity ${active ? 'opacity-60' : 'text-zinc-400'}">${c.time}</span>
+        <button data-del="${c.id}" aria-label="Delete conversation"
+                class="absolute right-1.5 w-6 h-6 hidden group-hover:grid place-items-center rounded-md bg-white dark:bg-ink-800 text-zinc-400 hover:text-rose-500 shadow-sm transition">
+          ${ic('x','w-3 h-3')}
+        </button>
+      </div>`;
+    }).join('');
+  }
+  els.sideStats.textContent = `${state.chats.length} conversations · ${state.stats.queries} queries · ${state.stats.messages} messages`;
+}
+
+/* ═══════════════════════════════════════════════════════════
+   Empty state
+   ═══════════════════════════════════════════════════════════ */
+function emptyStateHTML() {
+  return `
+    <div class="min-h-[58vh] flex flex-col items-center justify-center text-center px-2">
+      <div class="mb-7 animate-float">${famiFace({ size: 92, state: 'idle' })}</div>
+      <div class="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full bg-fam-500/10 dark:bg-fam-500/[0.12] text-fam-700 dark:text-fam-300 text-[10.5px] font-semibold uppercase tracking-widest mb-4">
+        <span class="w-1.5 h-1.5 rounded-full bg-fam-500"></span>
+        FAMASSER Intelligence
+      </div>
+      <h1 class="text-[30px] sm:text-[38px] font-semibold tracking-tight leading-tight
+                 bg-gradient-to-br from-zinc-900 via-zinc-700 to-zinc-400
+                 dark:from-white dark:via-slate-200 dark:to-slate-500 bg-clip-text text-transparent">
+        Meet Fami.
+      </h1>
+      <p class="text-[14.5px] text-zinc-500 dark:text-zinc-400 mt-3 max-w-md leading-relaxed">
+        Your AI assistant for <span class="font-semibold text-fam-600 dark:text-fam-400">FAMASSER</span>.
+        Ask about products, sales, inventory, customers, suppliers — and get clear, verified answers.
+      </p>
+      <div class="flex flex-wrap justify-center gap-1.5 mt-6">
+        ${['SQL verified','Voice mode','Files & folders','CSV export','On-premise','Does not invent data'].map(t => `
+          <span class="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-[10.5px] font-medium
+                       bg-white/70 dark:bg-white/[0.04] border border-zinc-200/80 dark:border-white/[0.07] text-zinc-500 dark:text-zinc-400">
+            <span class="w-1 h-1 rounded-full bg-fam-500"></span>${t}
+          </span>`).join('')}
+      </div>
+      <div class="grid sm:grid-cols-2 gap-2.5 mt-8 w-full max-w-2xl">
+        ${SUGGESTIONS.map(s => `
+          <button data-prompt="${escapeHtml(s.prompt)}"
+                  class="group text-left p-3.5 rounded-2xl border border-zinc-200/90 dark:border-white/[0.07]
+                         bg-white/70 dark:bg-white/[0.025] backdrop-blur
+                         hover:border-fam-400/60 dark:hover:border-fam-500/40 hover:bg-white dark:hover:bg-white/[0.05]
+                         hover:shadow-lg hover:shadow-fam-500/[0.07] hover:-translate-y-0.5 transition-all duration-200">
+            <div class="flex items-center gap-2.5 mb-1">
+              <span class="w-7 h-7 rounded-lg grid place-items-center bg-fam-500/10 dark:bg-fam-500/[0.14] text-fam-600 dark:text-fam-400">${ic(s.icon,'w-4 h-4')}</span>
+              <span class="text-[13px] font-semibold text-zinc-800 dark:text-slate-100">${s.title}</span>
+            </div>
+            <p class="text-[12px] text-zinc-500 dark:text-zinc-400 leading-snug">${s.sub}</p>
+          </button>`).join('')}
+      </div>
+    </div>`;
+}
+
+/* ═══════════════════════════════════════════════════════════
+   "How Fami found this" disclosure
+   ═══════════════════════════════════════════════════════════ */
+function howFamiHTML(meta, stepCount) {
+  if (!meta) return '';
+  const failed = !!meta.failed;
+  const done = Math.min(stepCount ?? REASONING_STEPS.length, REASONING_STEPS.length);
+  const accent = failed ? 'text-rose-500' : 'text-fam-600 dark:text-fam-400';
+  return `
+    <details class="how-fami mt-3 rounded-xl border ${failed ? 'border-rose-500/25' : 'border-zinc-200/80 dark:border-white/[0.07]'} bg-zinc-50/70 dark:bg-white/[0.02] overflow-hidden">
+      <summary class="flex items-center gap-2 px-3 py-2 text-[12px] font-medium text-zinc-600 dark:text-zinc-400 hover:bg-zinc-100 dark:hover:bg-white/[0.04] transition">
+        ${ic('eye','w-3.5 h-3.5 ' + accent)}
+        How Fami found this
+        <svg class="chev w-3.5 h-3.5 ml-auto text-zinc-400" fill="none" stroke="currentColor" stroke-width="2.2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="m6 9 6 6 6-6"/></svg>
+      </summary>
+      <div class="px-3.5 pb-3 pt-1 border-t border-zinc-200/70 dark:border-white/[0.05]">
+        <div class="mb-2.5">
+          ${REASONING_STEPS.map((s, i) => {
+            const isFailStep = failed && i === 3;
+            const cls = isFailStep ? 'failed' : (i < done ? 'done' : '');
+            const mark = isFailStep
+              ? ic('x','w-2 h-2')
+              : (i < done ? ic('check','w-2 h-2') : '');
+            return `
+            <div class="step-item ${cls}" style="animation-delay:${i * 60}ms">
+              <span class="step-check">${mark}</span>
+              <span class="text-zinc-600 dark:text-zinc-300">${s.label}</span>
+              ${i === done - 1 && !failed ? '<span class="step-spin ml-auto"></span>' : ''}
+            </div>`;
+          }).join('')}
+          ${failed ? `<div class="step-item failed" style="animation-delay:.3s"><span class="step-check">${ic('alert','w-2 h-2')}</span><span class="text-rose-500 font-medium">Échec — ${escapeHtml(FAMI_STATES.error.label)}</span></div>` : ''}
+        </div>
+        <div class="grid grid-cols-2 gap-y-2.5 gap-x-4 text-[12px]">
+          <div>
+            <div class="text-[10px] font-semibold uppercase tracking-widest text-zinc-400 mb-0.5">Database</div>
+            <div class="font-mono text-zinc-700 dark:text-zinc-300">${escapeHtml(meta.database)}</div>
+          </div>
+          <div>
+            <div class="text-[10px] font-semibold uppercase tracking-widest text-zinc-400 mb-0.5">Confidence</div>
+            <div class="inline-flex items-center gap-1.5 ${meta.confidence === 'Low' ? 'text-rose-500' : 'text-fam-600 dark:text-fam-400'} font-medium">
+              <span class="w-1.5 h-1.5 rounded-full ${meta.confidence === 'Low' ? 'bg-rose-500' : 'bg-fam-500'}"></span>${escapeHtml(meta.confidence)}
+            </div>
+          </div>
+          <div class="col-span-2">
+            <div class="text-[10px] font-semibold uppercase tracking-widest text-zinc-400 mb-1">Tables</div>
+            <div class="flex flex-wrap gap-1.5">
+              ${meta.tables.map(t => `<span class="font-mono text-[11px] px-2 py-0.5 rounded-md bg-fam-500/10 dark:bg-fam-500/[0.12] text-fam-700 dark:text-fam-300 border border-fam-500/20">${escapeHtml(t)}</span>`).join('')}
+            </div>
+          </div>
+          <div class="col-span-2 pt-1 flex items-center gap-4 text-[11.5px] text-zinc-500 dark:text-zinc-400">
+            <span class="inline-flex items-center gap-1 ${failed ? 'text-rose-500' : ''}">${ic(failed ? 'x' : 'check','w-3 h-3')} ${failed ? 'SQL validation failed' : 'SQL validated'}</span>
+            <span class="inline-flex items-center gap-1">${ic('check','w-3 h-3')} ${meta.rows != null ? `${meta.rows.toLocaleString()} rows returned` : 'Result obtained'}</span>
+          </div>
+        </div>
+      </div>
+    </details>`;
+}
+
+/* ═══════════════════════════════════════════════════════════
+   Results table (sortable) + chart with bar/line toggle
+   ═══════════════════════════════════════════════════════════ */
+function sortedRows(m) {
+  const meta = m.meta;
+  let rows = (meta.rowsData || []).slice();
+  if (m.sort) {
+    const { col, dir } = m.sort;
+    rows.sort((a, b) => {
+      const x = a[col], y = b[col];
+      const cmp = typeof x === 'number' && typeof y === 'number' ? x - y : String(x).localeCompare(String(y));
+      return cmp * dir;
+    });
+  }
+  return rows;
+}
+
+function resultsHTML(m) {
+  const meta = m.meta;
+  if (!meta || !meta.columns) return '<p class="text-[13px] text-zinc-500 italic py-4">No tabular result for this query.</p>';
+  const rows = sortedRows(m);
+  const head = meta.columns.map((c, i) => {
+    const active = m.sort && m.sort.col === i;
+    return `<th data-sortcol="${i}"><span class="inline-flex items-center gap-1">${escapeHtml(c)}
+      <span class="${active ? 'text-fam-500' : 'opacity-30'}">${ic('sort','w-2.5 h-2.5')}</span></span></th>`;
+  }).join('');
+  const body = rows.map(r =>
+    `<tr>${r.map(cell => `<td>${typeof cell === 'number' ? cell.toLocaleString() : escapeHtml(String(cell))}</td>`).join('')}</tr>`).join('');
+  const chartType = m.chartType || 'bar';
+  return `
+    <div class="rounded-xl overflow-hidden border border-zinc-200 dark:border-white/10">
+      <div class="overflow-x-auto max-h-64 overflow-y-auto">
+        <table class="res-table">
+          <thead class="sticky top-0 bg-zinc-50 dark:bg-ink-800"><tr>${head}</tr></thead>
+          <tbody>${body}</tbody>
+        </table>
+      </div>
+    </div>
+    <p class="text-[10.5px] text-zinc-400 mt-1.5">Click a column header to sort</p>
+    ${m.chart ? `
+      <div class="mt-3 rounded-xl border border-zinc-200 dark:border-white/10 p-3 bg-zinc-50/60 dark:bg-white/[0.02]">
+        <div class="flex items-center gap-2 mb-1.5">
+          <span class="text-[10px] font-semibold uppercase tracking-widest text-zinc-400 flex-1">${escapeHtml(m.chart.title)}</span>
+          ${['bar','line'].map(t => `
+            <button data-charttype="${t}" class="msg-tab ${chartType === t ? 'on' : ''}">${t === 'bar' ? 'Bars' : 'Line'}</button>`).join('')}
+        </div>
+        <canvas data-chart="${m.id}" style="width:100%;height:180px"></canvas>
+      </div>` : ''}
+    <div class="flex items-center gap-2 mt-3">
+      <button data-csv="${m.id}"
+              class="inline-flex items-center gap-1.5 px-2.5 py-1.5 rounded-lg text-[11.5px] font-medium bg-fam-700 text-white hover:bg-fam-600 shadow-sm transition">
+        ${ic('download','w-3.5 h-3.5')} Export CSV
+      </button>
+      <button data-copyrows="${m.id}" class="inline-flex items-center gap-1.5 px-2.5 py-1.5 rounded-lg text-[11.5px] font-medium border border-zinc-200 dark:border-white/10 text-zinc-600 dark:text-zinc-300 hover:border-fam-400 hover:text-fam-600 dark:hover:text-fam-400 transition">
+        ${ic('copy','w-3.5 h-3.5')} Copy rows
+      </button>
+      <span class="text-[11px] text-zinc-400 ml-auto">${meta.rows != null ? meta.rows.toLocaleString() + ' rows' : ''} · ${escapeHtml(meta.database)}</span>
+    </div>`;
+}
+
+function sqlHTML(m) {
+  if (!m.sql) return '<p class="text-[13px] text-zinc-500 italic py-4">No SQL generated for this response.</p>';
+  const failed = m.meta && m.meta.failed;
+  return `
+    <div class="rounded-xl overflow-hidden border ${failed ? 'border-rose-500/30' : 'border-zinc-200 dark:border-white/10'} bg-zinc-50 dark:bg-[#0a1513]">
+      <div class="flex items-center justify-between px-3.5 py-2 border-b ${failed ? 'border-rose-500/20 bg-rose-500/[0.06]' : 'border-zinc-200 dark:border-white/[0.07] bg-zinc-100/70 dark:bg-white/[0.03]'}">
+        <span class="text-[10px] font-mono uppercase tracking-widest ${failed ? 'text-rose-500' : 'text-zinc-500 dark:text-zinc-400'}">generated_sql.sql · ${failed ? 'failed' : 'validated'}</span>
+        <button data-copysql="${m.id}" class="text-[11px] font-medium px-2 py-0.5 rounded-md text-zinc-500 dark:text-zinc-400 hover:text-fam-600 dark:hover:text-fam-400 hover:bg-zinc-200/70 dark:hover:bg-white/10 transition">Copy SQL</button>
+      </div>
+      <pre class="p-4 overflow-x-auto text-[12.5px] leading-relaxed"><code class="font-mono text-zinc-800 dark:text-zinc-200">${highlightSQL(m.sql)}</code></pre>
+    </div>
+    <p class="text-[11px] text-zinc-400 mt-2">Query is read-only · executed against a replica · max 10k rows</p>`;
+}
+
+/* ═══════════════════════════════════════════════════════════
+   Message rendering
+   ═══════════════════════════════════════════════════════════ */
+function renderMessage(m) {
+  if (m.role === 'user') {
+    return `
+      <div class="group flex justify-end items-start gap-2.5 mb-6 animate-msgIn" data-mid="${m.id}">
+        <div class="max-w-[85%] sm:max-w-[75%]">
+          ${m.attachments && m.attachments.length ? `
+            <div class="flex flex-wrap gap-1.5 justify-end mb-1.5">
+              ${m.attachments.map(f => `
+                <div class="inline-flex items-center gap-1.5 px-2.5 py-1.5 rounded-lg bg-zinc-200/70 dark:bg-white/[0.08] text-[11.5px] text-zinc-700 dark:text-zinc-200">
+                  ${f.url ? `<img src="${f.url}" alt="" class="w-5 h-5 rounded object-cover"/>` : ic(fileIcon(f.name, f.type), 'w-4 h-4 text-zinc-500 dark:text-zinc-400')}
+                  <span class="font-medium truncate max-w-[140px]">${escapeHtml(f.name)}</span>
+                  <span class="text-zinc-500 dark:text-zinc-400 text-[10px]">${formatBytes(f.size)}</span>
+                </div>`).join('')}
+            </div>` : ''}
+          ${m.content ? `
+            <div data-bubble class="px-4 py-2.5 rounded-2xl rounded-br-md bg-fam-700 text-white
+                        text-[14.5px] leading-relaxed shadow-lg shadow-fam-700/15 whitespace-pre-wrap break-words">${escapeHtml(m.content)}</div>` : ''}
+          <div class="flex justify-end gap-0.5 mt-1 opacity-0 group-hover:opacity-100 transition-opacity duration-200">
+            <button data-act="copy-user" data-mid="${m.id}" title="Copy" class="icon-btn w-7 h-7">${ic('copy','w-3.5 h-3.5')}</button>
+            <button data-act="edit" data-mid="${m.id}" title="Edit & resend" class="icon-btn w-7 h-7">${ic('edit','w-3.5 h-3.5')}</button>
+            <button data-act="del" data-mid="${m.id}" title="Delete" class="icon-btn w-7 h-7 hover:!text-rose-500">${ic('trash','w-3.5 h-3.5')}</button>
+          </div>
+        </div>
+        <div class="shrink-0 w-8 h-8 rounded-full bg-gradient-to-br from-fam-500 to-fam-700 grid place-items-center text-white text-[11px] font-semibold shadow-md mt-0.5">HB</div>
+      </div>`;
+  }
+
+  // assistant
+  const isThinking = m.thinking;
+  const faceState = m.face || (isThinking ? 'scanning' : 'idle');
+  const hasTabs = !!(m.sql || (m.meta && m.meta.columns));
+  const failed = m.meta && m.meta.failed;
+
+  const thinkingBody = `
+    <div class="rounded-xl border border-fam-500/20 dark:border-fam-500/15 bg-fam-500/[0.04] dark:bg-fam-500/[0.05] px-3.5 py-3">
+      <div class="flex items-center gap-2.5 mb-2.5">
+        <span class="dot w-1.5 h-1.5 rounded-full bg-fam-500"></span>
+        <span class="dot w-1.5 h-1.5 rounded-full bg-fam-500"></span>
+        <span class="dot w-1.5 h-1.5 rounded-full bg-fam-500"></span>
+        <span class="text-[12.5px] font-medium text-fam-700 dark:text-fam-300" data-steptext>${escapeHtml(FAMI_STATES.scanning.label)}</span>
+      </div>
+      <div data-stepline>
+        ${REASONING_STEPS.map((s, i) => `
+          <div class="step-item" data-step="${i}">
+            <span class="step-check"></span>
+            <span class="text-zinc-600 dark:text-zinc-300">${s.label}</span>
+          </div>`).join('')}
+      </div>
+    </div>`;
+
+  const answerBody = `
+    ${hasTabs ? `
+    <div class="flex items-center gap-1 mb-2 -ml-1" role="tablist">
+      ${['answer','sql','results'].map(t => `
+        <button data-tab="${t}" role="tab" aria-selected="${t === 'answer'}"
+                class="msg-tab ${t === 'answer' ? 'on' : ''}">${t === 'answer' ? 'Answer' : t === 'sql' ? 'SQL' : 'Results'}</button>`).join('')}
+      ${failed ? `<span class="ml-auto inline-flex items-center gap-1 text-[10px] font-semibold text-rose-500">${ic('alert','w-3 h-3')} Failed</span>` : ''}
+    </div>` : ''}
+    <div data-pane="answer">
+      <div data-content="${m.id}" class="prose-chat text-zinc-700 dark:text-zinc-300">${renderMarkdown(m.content)}</div>
+      ${m.streaming ? '<span class="inline-block w-[7px] h-[15px] align-middle bg-fam-500/80 rounded-sm animate-pulse mt-1"></span>' : ''}
+    </div>
+    ${hasTabs ? `
+    <div data-pane="sql" class="hidden">${sqlHTML(m)}</div>
+    <div data-pane="results" class="hidden">${resultsHTML(m)}</div>` : ''}
+    ${m.meta ? howFamiHTML(m.meta, m.stepsDone) : ''}
+    ${m.followups && !m.streaming && settings.followups ? `
+      <div class="flex flex-wrap gap-1.5 mt-3">
+        ${m.followups.map(f => `<button data-follow="${escapeHtml(f)}" class="follow-chip">${escapeHtml(f)}</button>`).join('')}
+      </div>` : ''}`;
+
+  return `
+    <div class="group flex gap-3 mb-6 animate-msgIn ${failed ? '' : ''}" data-mid="${m.id}">
+      <div class="shrink-0 mt-0.5" data-facewrap>${famiFace({ size: 34, state: faceState })}</div>
+      <div class="flex-1 min-w-0 pt-0.5">
+        <div class="flex items-center gap-2 mb-1">
+          <span class="text-[12px] font-semibold text-zinc-800 dark:text-slate-200 tracking-tight">Fami</span>
+          <span class="text-[10px] text-zinc-400 dark:text-zinc-500">FAMASSER Intelligence</span>
+          ${m.modelName ? `<span class="text-[9.5px] font-mono px-1.5 py-0.5 rounded bg-zinc-100 dark:bg-white/[0.07] text-zinc-500 dark:text-zinc-400">${escapeHtml(m.modelName)}</span>` : ''}
+        </div>
+        ${isThinking ? thinkingBody : answerBody}
+        ${!isThinking ? `
+        <div class="flex items-center gap-0.5 mt-2 -ml-1.5 opacity-0 group-hover:opacity-100 transition-opacity duration-200">
+          <button data-act="copy" data-mid="${m.id}" title="Copy" class="icon-btn w-7 h-7">${ic('copy','w-3.5 h-3.5')}</button>
+          <button data-act="tts" data-mid="${m.id}" title="Read aloud" class="icon-btn w-7 h-7">${ic('volume','w-3.5 h-3.5')}</button>
+          <button data-act="regen" data-mid="${m.id}" title="Regenerate" class="icon-btn w-7 h-7">${ic('refresh','w-3.5 h-3.5')}</button>
+          <button data-act="like" data-mid="${m.id}" title="Good response" class="icon-btn w-7 h-7 ${m.feedback === 'up' ? '!text-fam-500' : ''}">${ic('thumbsUp','w-3.5 h-3.5')}</button>
+          <button data-act="dislike" data-mid="${m.id}" title="Bad response" class="icon-btn w-7 h-7 ${m.feedback === 'down' ? '!text-rose-500' : ''}">${ic('thumbsDown','w-3.5 h-3.5')}</button>
+          <button data-act="del" data-mid="${m.id}" title="Delete" class="icon-btn w-7 h-7 hover:!text-rose-500">${ic('trash','w-3.5 h-3.5')}</button>
+        </div>` : ''}
+      </div>
+    </div>`;
+}
+
+function renderMessages(scroll = false) {
+  const chat = activeChat();
+  if (!chat || !chat.messages.length) {
+    els.messages.innerHTML = emptyStateHTML();
+    drawAllCharts();
+    return;
+  }
+  els.messages.innerHTML = chat.messages.map(renderMessage).join('');
+  drawAllCharts();
+  syncTtsButtons();
+  if (scroll) requestAnimationFrame(() => scrollToBottom(true));
+}
+
+function drawAllCharts(root = els.messages) {
+  $$('canvas[data-chart]', root).forEach(cv => {
+    const chat = activeChat();
+    const m = chat && chat.messages.find(x => x.id === cv.dataset.chart);
+    if (m && m.chart) drawChart(cv, m.chart.labels, m.chart.values, m.chartType || 'bar');
+  });
+}
+
+/* ═══════════════════════════════════════════════════════════
+   Chat helpers
+   ═══════════════════════════════════════════════════════════ */
+const activeChat = () => state.chats.find(c => c.id === state.activeId);
+
+function newChat() {
+  const chat = { id: uid(), title: 'New conversation', pinned: false, time: 'now', messages: [] };
+  state.chats.unshift(chat);
+  state.activeId = chat.id;
+  renderSidebar(); renderMessages(true); store.save();
+  els.input.focus();
+  closeSidebarMobile();
+  sfx.pop();
+}
+
+function selectChat(id) {
+  if (state.generating) return;
+  state.activeId = id;
+  stopSpeak();
+  renderSidebar(); renderMessages(true);
+  closeSidebarMobile();
+}
+
+async function deleteChat(id) {
+  const c = state.chats.find(x => x.id === id);
+  const ok = await confirmDlg({ title: 'Delete conversation', body: `"${c ? c.title : ''}" will be permanently removed.`, okText: 'Delete' });
+  if (!ok) return;
+  const i = state.chats.findIndex(c => c.id === id);
+  if (i === -1) return;
+  state.chats.splice(i, 1);
+  if (state.activeId === id) {
+    if (!state.chats.length) { newChat(); return; }
+    state.activeId = state.chats[0].id;
+    renderMessages(true);
+  }
+  renderSidebar(); store.save();
+  toast('Conversation deleted');
+}
+
+function renameChat(id) {
+  const c = state.chats.find(x => x.id === id);
+  if (!c) return;
+  const item = els.chatList.querySelector(`[data-chat="${id}"]`);
+  const span = item && item.querySelector('span.truncate');
+  if (!span) return;
+  const input = document.createElement('input');
+  input.value = c.title;
+  input.className = 'w-full text-[13px] font-medium bg-white dark:bg-ink-800 border border-fam-500/50 rounded-md px-1.5 py-0.5 outline-none';
+  span.replaceWith(input);
+  input.focus(); input.select();
+  const commit = save => {
+    if (save && input.value.trim()) c.title = input.value.trim().slice(0, 60);
+    renderSidebar(); store.save();
+  };
+  input.addEventListener('keydown', e => {
+    if (e.key === 'Enter') commit(true);
+    if (e.key === 'Escape') commit(false);
+    e.stopPropagation();
+  });
+  input.addEventListener('blur', () => commit(true));
+}
+
+/* ═══════════════════════════════════════════════════════════
+   Scroll
+   ═══════════════════════════════════════════════════════════ */
+let stickToBottom = true;
+const nearBottom = () => { const el = els.chatScroll; return el.scrollHeight - el.scrollTop - el.clientHeight < 120; };
+function scrollToBottom(instant = false) { els.chatScroll.scrollTo({ top: els.chatScroll.scrollHeight, behavior: instant ? 'auto' : 'smooth' }); }
+els.chatScroll.addEventListener('scroll', () => {
+  stickToBottom = nearBottom();
+  els.scrollBtn.classList.toggle('hidden', stickToBottom);
+});
+els.scrollBtn.addEventListener('click', () => scrollToBottom());
+
+/* ═══════════════════════════════════════════════════════════
+   Generation pipeline — FAMI goes through its expressions
+   ═══════════════════════════════════════════════════════════ */
+let rafQueued = false;
+function queueContentUpdate(msg) {
+  if (rafQueued) return;
+  rafQueued = true;
+  requestAnimationFrame(() => {
+    rafQueued = false;
+    const node = els.messages.querySelector(`[data-mid="${msg.id}"]`);
+    const content = node && node.querySelector(`[data-content="${msg.id}"]`);
+    if (content) content.innerHTML = renderMarkdown(msg.content);
+    if (stickToBottom) scrollToBottom();
+    if (voiceModeOpen && els.voiceCaption) els.voiceCaption.textContent = stripMd(msg.content) || '…';
+  });
+}
+
+/* Animate the reasoning timeline; each step switches FAMI's face */
+function animateSteps(msg, failAt = Infinity) {
+  return new Promise(resolve => {
+    const root = els.messages.querySelector(`[data-mid="${msg.id}"]`);
+    if (!root) return resolve();
+    let i = 0;
+    const tick = () => {
+      if (state.abort || i >= REASONING_STEPS.length || i >= failAt) return resolve(i);
+      const step = REASONING_STEPS[i];
+      root.querySelectorAll('[data-step]').forEach((el, j) => {
+        el.classList.toggle('active', j === i);
+        el.classList.toggle('done', j < i);
+        if (j < i) el.querySelector('.step-check').innerHTML = ic('check','w-2 h-2');
+      });
+      const st = root.querySelector('[data-steptext]');
+      if (st) st.textContent = `Fami · ${step.label}…`;
+      msg.stepsDone = i + 1;
+      setMsgFace(msg, step.state);
+      setFamiStatus(step.state);
+      i++;
+      setTimeout(tick, 340 + Math.random() * 190);
+    };
+    tick();
+  });
+}
+
+async function sendMessage(text) {
+  const chat = activeChat();
+  if (!chat) return;
+  const trimmed = (text || '').trim();
+  if (!trimmed && !state.attachments.length) return;
+  if (state.generating) return;
+
+  stopSpeak();
+  const attachmentSnapshot = state.attachments.slice();
+  state.attachments = [];
+  renderAttachments();
+
+  chat.messages.push({ id: uid(), role: 'user', content: trimmed, attachments: attachmentSnapshot });
+  state.stats.messages++;
+
+  if (chat.title === 'New conversation') {
+    const base = trimmed || (attachmentSnapshot[0] && attachmentSnapshot[0].name) || 'Attachment';
+    chat.title = base.slice(0, 34) + (base.length > 34 ? '…' : '');
+    renderSidebar();
+  }
+
+  const reply = { id: uid(), role: 'assistant', content: '', thinking: true, stepsDone: 0,
+                  face: 'scanning', modelName: state.model.name };
+  chat.messages.push(reply);
+
+  renderMessages(true);
+  setGenerating(true);
+  setFamiStatus('scanning');
+  els.genProgress.classList.remove('hidden');
+  state.abort = false;
+  sfx.send();
+
+  // Decide demo outcome — "error/timeout/erreur" forces the failure path
+  const wantsError = /error|erreur|timeout|fail/i.test(trimmed) || Math.random() < 0.14;
+  const demo = wantsError ? ERROR_RESPONSE
+                          : DEMO_RESPONSES[Math.floor(Math.random() * DEMO_RESPONSES.length)];
+
+  // Phase 1 — reasoning (FAMI scans, builds, executes)
+  await animateSteps(reply, wantsError ? 3 : Infinity);
+  if (state.abort) return finishStream();
+
+  reply.thinking = false;
+  reply.streaming = true;
+  reply.sql = demo.sql;
+  reply.chart = demo.chart;
+  reply.followups = demo.followups;
+  renderMessages(true);
+
+  if (wantsError) {
+    // Failure path — FAMI is concerned
+    reply.content = demo.content;
+    reply.meta = demo.meta;
+    reply.stepsDone = 3;
+    reply.streaming = false;
+    setMsgFace(reply, 'error');
+    setFamiStatus('error');
+    sfx.error();
+    els.genProgress.classList.add('hidden');
+    renderMessages(true);
+    return finishStream(true);
+  }
+
+  // Phase 2 — stream the answer (FAMI speaks)
+  setMsgFace(reply, 'speaking');
+  setFamiStatus('speaking');
+  const full = demo.content;
+  let i = 0;
+  while (i < full.length) {
+    if (state.abort) break;
+    const step = 1 + Math.floor(Math.random() * 3);
+    reply.content += full.slice(i, i + step);
+    i += step;
+    queueContentUpdate(reply);
+    await sleep(8 + Math.random() * 13);
+  }
+  if (state.abort && i < full.length) reply.content += '\n\n*— generation stopped —*';
+
+  reply.streaming = false;
+  reply.meta = demo.meta;
+  reply.stepsDone = REASONING_STEPS.length;
+  setMsgFace(reply, 'success');
+  setFamiStatus('success');
+  sfx.success();
+  els.genProgress.classList.add('hidden');
+
+  state.history.push({ ts: Date.now(), sql: demo.sql, title: chat.title, rows: demo.meta.rows });
+  state.stats.queries++;
+
+  finishStream();
+}
+
+function finishStream(failed = false) {
+  state.generating = false;
+  state.abort = false;
+  setGenerating(false);
+  setFamiStatus(failed ? 'error' : 'success');
+  renderMessages();
+  store.save();
+  renderSidebar();
+  if (stickToBottom) scrollToBottom();
+
+  const chat = activeChat();
+  const last = chat && [...chat.messages].reverse().find(m => m.role === 'assistant' && m.content);
+
+  if (voiceModeOpen) {
+    if (last) els.voiceCaption.textContent = stripMd(last.content);
+    const resume = () => { if (voiceModeOpen && !voicePausedByUser) startVoiceListening(); };
+    if (last && !failed && !voiceMuted) speak(last.content, last.id, resume);
+    else setTimeout(resume, 500);
+  } else if (settings.autoTTS) {
+    if (last && !failed) speak(last.content, last.id);
+  }
+
+  setTimeout(() => { if (!state.generating && !voiceModeOpen) setFamiStatus('idle'); }, 2600);
+  if (document.hidden) {
+    document.title = '● Fami replied — FAMASSER Intelligence';
+    toast(failed ? 'Fami hit an error' : 'Fami finished answering', failed ? 'err' : 'ok');
+  }
+}
+
+function setGenerating(on) {
+  state.generating = on;
+  els.sendBtn.classList.toggle('hidden', on);
+  els.stopBtn.classList.toggle('hidden', !on);
+  els.stopBtn.classList.toggle('flex', on);
+  els.micBtn.disabled = on;
+}
+
+/* ═══════════════════════════════════════════════════════════
+   Composer
+   ═══════════════════════════════════════════════════════════ */
+function autoResize() {
+  els.input.style.height = 'auto';
+  els.input.style.height = Math.min(els.input.scrollHeight, 200) + 'px';
+}
+function syncComposer() {
+  autoResize();
+  const val = els.input.value;
+  const hasContent = val.trim() || state.attachments.length;
+  els.sendBtn.disabled = !hasContent || state.generating;
+  els.charCount.textContent = `${val.length}`;
+  els.charCount.classList.toggle('opacity-0', val.length === 0);
+  syncSlash();
+}
+els.input.addEventListener('input', syncComposer);
+els.input.addEventListener('keydown', e => {
+  if (!els.slashPopup.classList.contains('hidden')) {
+    if (e.key === 'ArrowDown') { e.preventDefault(); moveSlash(1); return; }
+    if (e.key === 'ArrowUp')   { e.preventDefault(); moveSlash(-1); return; }
+    if (e.key === 'Enter' || e.key === 'Tab') { e.preventDefault(); applySlash(slashIndex); return; }
+    if (e.key === 'Escape')    { e.preventDefault(); hideSlash(); return; }
+  }
+  if (e.key === 'Enter' && !e.shiftKey && !e.isComposing && settings.enterSend) {
+    e.preventDefault();
+    submit();
+  }
+});
+els.sendBtn.addEventListener('click', submit);
+
+function submit() {
+  const val = els.input.value;
+  if ((!val.trim() && !state.attachments.length) || state.generating) return;
+  els.input.value = '';
+  syncComposer();
+  sendMessage(val);
+  stickToBottom = true;
+}
+els.stopBtn.addEventListener('click', () => { state.abort = true; });
+
+/* ═══════════════════════════════════════════════════════════
+   Slash commands
+   ═══════════════════════════════════════════════════════════ */
+const SLASH_COMMANDS = [
+  { cmd: '/sql',      desc: 'Force SQL Copilot mode',        run: () => switchModel('sql-copilot') },
+  { cmd: '/new',      desc: 'Start a new conversation',      run: newChat },
+  { cmd: '/clear',    desc: 'Clear current conversation',    run: clearChat },
+  { cmd: '/export',   desc: 'Export chat as JSON',           run: exportChat },
+  { cmd: '/md',       desc: 'Copy chat as Markdown',         run: copyChatMarkdown },
+  { cmd: '/theme',    desc: 'Toggle dark / light theme',     run: toggleTheme },
+  { cmd: '/zen',      desc: 'Toggle focus mode',             run: toggleZen },
+  { cmd: '/print',    desc: 'Print conversation',            run: () => window.print() },
+  { cmd: '/help',     desc: 'What can Fami do?',             run: () => { els.input.value = 'What can you help me with?'; syncComposer(); submit(); } },
+];
+let slashFiltered = SLASH_COMMANDS;
+let slashIndex = 0;
+
+function syncSlash() {
+  const v = els.input.value;
+  if (!v.startsWith('/')) return hideSlash();
+  const q = v.toLowerCase();
+  slashFiltered = SLASH_COMMANDS.filter(c => c.cmd.startsWith(q));
+  slashIndex = 0;
+  if (!slashFiltered.length) return hideSlash();
+  renderSlash();
+  els.slashPopup.classList.remove('hidden');
+}
+function renderSlash() {
+  els.slashList.innerHTML = slashFiltered.map((c, i) => `
+    <button data-slash="${i}" class="w-full flex items-center gap-3 px-3 py-2.5 rounded-xl text-left transition
+                   ${i === slashIndex ? 'bg-fam-500/10 dark:bg-fam-500/[0.15]' : 'hover:bg-zinc-100 dark:hover:bg-white/[0.05]'}">
+      <span class="font-mono text-[12px] font-semibold text-fam-600 dark:text-fam-400 w-16">${c.cmd}</span>
+      <span class="flex-1 text-[12.5px] text-zinc-600 dark:text-zinc-300">${c.desc}</span>
+    </button>`).join('');
+}
+function moveSlash(d) {
+  slashIndex = Math.max(0, Math.min(slashIndex + d, slashFiltered.length - 1));
+  renderSlash();
+}
+function applySlash(i) {
+  const c = slashFiltered[i];
+  if (!c) return hideSlash();
+  hideSlash();
+  els.input.value = '';
+  syncComposer();
+  setTimeout(() => c.run(), 40);
+}
+function hideSlash() { els.slashPopup.classList.add('hidden'); }
+els.slashList.addEventListener('click', e => {
+  const btn = e.target.closest('[data-slash]');
+  if (btn) applySlash(+btn.dataset.slash);
+});
+
+/* ═══════════════════════════════════════════════════════════
+   Voice input
+   ═══════════════════════════════════════════════════════════ */
+const SR = window.SpeechRecognition || window.webkitSpeechRecognition;
+let rec = null, recActive = false;
+if (!SR) {
+  els.micBtn.style.display = 'none';
+} else {
+  rec = new SR();
+  rec.lang = 'en-US';
+  rec.interimResults = true;
+  rec.continuous = false;
+  rec.onstart = () => {
+    recActive = true;
+    els.micBtn.classList.add('text-rose-500', 'animate-recPulse', 'bg-rose-500/10');
+    toast('Listening… speak now');
+  };
+  rec.onend = () => {
+    recActive = false;
+    els.micBtn.classList.remove('text-rose-500', 'animate-recPulse', 'bg-rose-500/10');
+  };
+  rec.onerror = rec.onend;
+  rec.onresult = e => {
+    let interim = '', final = '';
+    for (const r of e.results) (r.isFinal ? final += r[0].transcript : interim += r[0].transcript);
+    els.input.value = (els.input.value.replace(/ \[listening…\]$/, '') + final + (interim ? ' [listening…]' : ''));
+    syncComposer();
+  };
+}
+els.micBtn.addEventListener('click', () => {
+  if (!rec) return;
+  if (recActive) { rec.stop(); return; }
+  try { rec.start(); } catch (_) {}
+});
+
+/* ═══════════════════════════════════════════════════════════
+   Voice mode — full immersive, hands-free conversation with Fami.
+   Reuses the same demo pipeline as the text composer (sendMessage /
+   setFamiStatus / speak) so it's a drop-in surface for the real
+   Copilot SAP backend later: swap sendMessage's demo branch for a
+   live API call and voice mode keeps working unchanged.
+   ═══════════════════════════════════════════════════════════ */
+let voiceModeOpen = false;
+let voiceShouldListen = false;
+let voicePausedByUser = false;
+let voiceMuted = false;
+let voiceRec = null;
+let voiceRecActive = false;
+
+function renderVoiceBars() {
+  if (!els.voiceBars || els.voiceBars.children.length) return;
+  els.voiceBars.innerHTML = Array.from({ length: 9 }).map((_, i) =>
+    `<span class="voice-bar" style="height:${10 + (i % 5) * 4}px;animation-delay:${(i * 0.09).toFixed(2)}s"></span>`
+  ).join('');
+}
+
+function updateVoiceFace(s, label) {
+  if (!voiceModeOpen || !els.voiceFace) return;
+  els.voiceFace.innerHTML = famiFace({ size: 208, state: s });
+  if (els.voiceStatusLabel) els.voiceStatusLabel.textContent = label || (FAMI_STATES[s] || FAMI_STATES.idle).label;
+
+  const auraColor = {
+    listening: 'bg-sky-400/25 dark:bg-sky-500/25',
+    error: 'bg-rose-400/25 dark:bg-rose-500/25',
+  }[s] || 'bg-fam-400/25 dark:bg-fam-500/25';
+  if (els.voiceAuraGlow) {
+    els.voiceAuraGlow.className = `voice-aura absolute w-64 h-64 sm:w-72 sm:h-72 rounded-full blur-3xl ${auraColor}`;
+    const scale = { listening: 1.12, speaking: 1.18, executing: 1.1, building: 1.05, scanning: 1.05, error: 1.08 }[s] || 1;
+    els.voiceAuraGlow.style.transform = `scale(${scale})`;
+    els.voiceAuraGlow.style.opacity = s === 'idle' ? '.45' : '.75';
+  }
+  if (els.voiceBars) {
+    const active = s === 'listening' || s === 'speaking';
+    els.voiceBars.classList.toggle('speaking-bars', s === 'speaking');
+    els.voiceBars.classList.toggle('idle-bars', !active);
+    els.voiceBars.style.opacity = active ? '1' : '.4';
+  }
+}
+
+function setVoiceMicUI(listening) {
+  if (!els.voiceMicBtn) return;
+  els.voiceMicBtn.classList.toggle('bg-fam-700', !listening);
+  els.voiceMicBtn.classList.toggle('hover:bg-fam-600', !listening);
+  els.voiceMicBtn.classList.toggle('bg-rose-600', listening);
+  els.voiceMicBtn.classList.toggle('hover:bg-rose-500', listening);
+  els.voiceMicBtn.classList.toggle('shadow-rose-600/30', listening);
+  els.voiceMicBtn.classList.toggle('shadow-fam-700/30', !listening);
+  els.voiceMicBtn.classList.toggle('animate-recPulse', listening);
+  els.voiceMicBtn.title = listening ? 'Pause listening' : (voicePausedByUser ? 'Resume listening' : 'Listening…');
+}
+
+function startVoiceListening() {
+  if (!SR) { toast('Voice recognition is not supported in this browser'); return; }
+  if (state.generating || speechSynthesis.speaking) return;
+  voicePausedByUser = false;
+  voiceShouldListen = true;
+  if (voiceRecActive) return;
+  if (!voiceRec) {
+    voiceRec = new SR();
+    voiceRec.lang = 'en-US';
+    voiceRec.interimResults = true;
+    voiceRec.continuous = true;
+    voiceRec.onstart = () => {
+      voiceRecActive = true;
+      setVoiceMicUI(true);
+      setFamiStatus('listening');
+      if (els.voiceCaption) els.voiceCaption.textContent = 'Listening…';
+    };
+    voiceRec.onend = () => {
+      voiceRecActive = false;
+      setVoiceMicUI(false);
+      if (voiceShouldListen && voiceModeOpen && !voicePausedByUser) {
+        setTimeout(() => { if (voiceShouldListen && voiceModeOpen) { try { voiceRec.start(); } catch (_) {} } }, 120);
+      }
+    };
+    voiceRec.onerror = e => {
+      voiceRecActive = false;
+      setVoiceMicUI(false);
+      if (e.error === 'not-allowed' || e.error === 'service-not-allowed') {
+        toast('Microphone access denied');
+        voiceShouldListen = false;
+        closeVoiceMode();
+      }
+    };
+    voiceRec.onresult = e => {
+      let interim = '', final = '';
+      for (const r of e.results) (r.isFinal ? final += r[0].transcript : interim += r[0].transcript);
+      if (interim && els.voiceCaption) els.voiceCaption.textContent = interim;
+      if (final.trim()) {
+        voiceShouldListen = false;
+        try { voiceRec.stop(); } catch (_) {}
+        handleVoiceFinal(final.trim());
+      }
+    };
+  }
+  try { voiceRec.start(); } catch (_) {}
+}
+
+function stopVoiceListening() {
+  voiceShouldListen = false;
+  if (voiceRec && voiceRecActive) { try { voiceRec.stop(); } catch (_) {} }
+}
+
+function handleVoiceFinal(transcript) {
+  if (!transcript) { if (voiceModeOpen) startVoiceListening(); return; }
+  if (els.voiceCaption) els.voiceCaption.textContent = transcript;
+  sendMessage(transcript);
+}
+
+function openVoiceMode() {
+  if (!SR) { toast('Voice recognition is not supported in this browser — try Chrome or Edge'); return; }
+  if (recActive) { try { rec.stop(); } catch (_) {} }
+  voiceModeOpen = true;
+  voicePausedByUser = false;
+  renderVoiceBars();
+  els.voiceMode.classList.remove('hidden');
+  els.voiceMode.classList.add('active', 'flex');
+  document.body.style.overflow = 'hidden';
+  updateVoiceFace(state.generating ? lastFamiState : 'listening');
+  if (!state.generating) startVoiceListening();
+  sfx.open();
+}
+
+function closeVoiceMode() {
+  voiceModeOpen = false;
+  stopVoiceListening();
+  stopSpeak();
+  els.voiceMode.classList.add('hidden');
+  els.voiceMode.classList.remove('active', 'flex');
+  document.body.style.overflow = '';
+  els.input.focus();
+}
+
+els.voiceModeBtn.addEventListener('click', openVoiceMode);
+els.voiceHint.addEventListener('click', openVoiceMode);
+els.voiceCloseBtn.addEventListener('click', closeVoiceMode);
+els.voiceTextModeBtn.addEventListener('click', closeVoiceMode);
+els.voiceMicBtn.addEventListener('click', () => {
+  if (voiceRecActive) { voicePausedByUser = true; stopVoiceListening(); setFamiStatus('idle'); if (els.voiceCaption) els.voiceCaption.textContent = 'Paused — tap the mic to keep talking.'; }
+  else { voicePausedByUser = false; startVoiceListening(); }
+});
+els.voiceMuteBtn.addEventListener('click', () => {
+  voiceMuted = !voiceMuted;
+  els.voiceMuteBtn.classList.toggle('text-rose-500', voiceMuted);
+  els.voiceMuteBtn.innerHTML = ic(voiceMuted ? 'volumeX' : 'volume', 'w-4.5 h-4.5');
+  els.voiceMuteBtn.title = voiceMuted ? "Fami's voice is muted" : "Mute Fami's voice";
+  if (voiceMuted && speechSynthesis.speaking) stopSpeak();
+  toast(voiceMuted ? 'Fami will stay silent — captions only' : 'Fami will speak again', 'ok');
+});
+
+/* ═══════════════════════════════════════════════════════════
+   Attachments
+   ═══════════════════════════════════════════════════════════ */
+function addFiles(fileList) {
+  const files = Array.from(fileList || []);
+  if (!files.length) return;
+  let added = 0;
+  for (const f of files) {
+    const exists = state.attachments.some(a => a.name === f.name && a.size === f.size);
+    if (exists) continue;
+    state.attachments.push({
+      name: f.name, size: f.size, type: f.type || '',
+      path: f.webkitRelativePath || f.name, file: f,
+      url: f.type && f.type.startsWith('image/') ? URL.createObjectURL(f) : null,
+    });
+    added++;
+  }
+  if (added) {
+    renderAttachments();
+    syncComposer();
+    sfx.pop();
+    toast(`${added} file${added > 1 ? 's' : ''} attached`);
+  }
+}
+function removeAttachment(idx) {
+  state.attachments.splice(idx, 1);
+  renderAttachments();
+  syncComposer();
+}
+function renderAttachments() {
+  const list = state.attachments;
+  if (!list.length) {
+    els.attachments.classList.add('hidden');
+    els.attachments.innerHTML = '';
+    return;
+  }
+  els.attachments.classList.remove('hidden');
+  els.attachments.innerHTML = list.map((f, i) => `
+    <div class="group inline-flex items-center gap-1.5 pl-1.5 pr-1.5 py-1 rounded-lg
+                bg-zinc-100 dark:bg-white/[0.06] border border-zinc-200/70 dark:border-white/[0.06] text-[11.5px] max-w-[240px]">
+      ${f.url ? `<img src="${f.url}" alt="" class="w-6 h-6 rounded object-cover shrink-0"/>`
+              : `<span class="shrink-0 text-zinc-500 dark:text-zinc-400">${ic(fileIcon(f.name, f.type),'w-4 h-4')}</span>`}
+      <span class="font-medium text-zinc-700 dark:text-zinc-200 truncate">${escapeHtml(f.name)}</span>
+      <span class="shrink-0 text-zinc-400 text-[10px] tabular-nums">${formatBytes(f.size)}</span>
+      <button data-remove="${i}" title="Remove attachment" class="shrink-0 w-4 h-4 grid place-items-center rounded text-zinc-400 hover:text-rose-500 hover:bg-rose-500/10 transition">
+        ${ic('x','w-2.5 h-2.5')}
+      </button>
+    </div>`).join('');
+}
+els.attachments.addEventListener('click', e => {
+  const btn = e.target.closest('[data-remove]');
+  if (btn) removeAttachment(+btn.dataset.remove);
+});
+els.attachBtn.addEventListener('click', () => els.fileInput.click());
+els.folderBtn.addEventListener('click', () => els.folderInput.click());
+els.fileInput.addEventListener('change', e => { addFiles(e.target.files); e.target.value = ''; });
+els.folderInput.addEventListener('change', e => { addFiles(e.target.files); e.target.value = ''; });
+els.input.addEventListener('paste', e => {
+  const items = e.clipboardData && e.clipboardData.items;
+  if (!items) return;
+  const files = [];
+  for (const it of items) if (it.kind === 'file') { const f = it.getAsFile(); if (f) files.push(f); }
+  if (files.length) { e.preventDefault(); addFiles(files); }
+});
+
+/* ═══════════════════════════════════════════════════════════
+   Drag & drop (files + folders)
+   ═══════════════════════════════════════════════════════════ */
+let dragDepth = 0;
+const hasFiles = e => {
+  const dt = e.dataTransfer;
+  if (!dt) return false;
+  if (dt.types && Array.from(dt.types).includes('Files')) return true;
+  return !!(dt.items && dt.items.length && Array.from(dt.items).some(i => i.kind === 'file'));
+};
+window.addEventListener('dragenter', e => {
+  if (!hasFiles(e)) return;
+  e.preventDefault();
+  dragDepth++;
+  els.dropOverlay.classList.remove('hidden');
+  els.dropOverlay.classList.add('active', 'flex');
+});
+window.addEventListener('dragover', e => {
+  if (!hasFiles(e)) return;
+  e.preventDefault();
+  e.dataTransfer.dropEffect = 'copy';
+});
+window.addEventListener('dragleave', e => {
+  if (!hasFiles(e)) return;
+  dragDepth = Math.max(0, dragDepth - 1);
+  if (dragDepth === 0) {
+    els.dropOverlay.classList.add('hidden');
+    els.dropOverlay.classList.remove('active', 'flex');
+  }
+});
+window.addEventListener('drop', async e => {
+  if (!hasFiles(e)) return;
+  e.preventDefault();
+  dragDepth = 0;
+  els.dropOverlay.classList.add('hidden');
+  els.dropOverlay.classList.remove('active', 'flex');
+
+  const dt = e.dataTransfer;
+  const collected = [];
+  if (dt.files && dt.files.length) collected.push(...Array.from(dt.files));
+  if (dt.items && dt.items.length) {
+    const entries = [];
+    for (const item of dt.items) {
+      if (item.kind !== 'file') continue;
+      const entry = item.webkitGetAsEntry && item.webkitGetAsEntry();
+      if (entry) entries.push(entry);
+    }
+    async function walk(entry, path = '') {
+      if (!entry) return;
+      if (entry.isFile) {
+        const file = await new Promise((res, rej) => entry.file(res, rej));
+        try { Object.defineProperty(file, 'webkitRelativePath', { value: path + entry.name, configurable: true }); } catch (_) {}
+        collected.push(file);
+      } else if (entry.isDirectory) {
+        const reader = entry.createReader();
+        const children = await new Promise(res => {
+          const out = [];
+          const read = () => reader.readEntries(batch => {
+            if (!batch.length) return res(out);
+            out.push(...batch);
+            read();
+          }, () => res(out));
+          read();
+        });
+        for (const child of children) await walk(child, path + entry.name + '/');
+      }
+    }
+    for (const entry of entries) await walk(entry);
+  }
+  if (collected.length) addFiles(collected);
+});
+
+/* ═══════════════════════════════════════════════════════════
+   CSV export
+   ═══════════════════════════════════════════════════════════ */
+function exportCSV(m) {
+  if (!m.meta || !m.meta.columns) return toast('No results to export');
+  const esc = v => { const s = String(v); return /[",\n]/.test(s) ? '"' + s.replace(/"/g, '""') + '"' : s; };
+  const csv = [
+    m.meta.columns.map(esc).join(','),
+    ...sortedRows(m).map(r => r.map(esc).join(',')),
+  ].join('\n');
+  const blob = new Blob(['\ufeff' + csv], { type: 'text/csv;charset=utf-8' });
+  const a = document.createElement('a');
+  a.href = URL.createObjectURL(blob);
+  a.download = `famasser-results-${Date.now()}.csv`;
+  a.click();
+  URL.revokeObjectURL(a.href);
+  toast('CSV exported', 'ok');
+}
+function downloadBlob(content, name, type) {
+  const blob = new Blob([content], { type });
+  const a = document.createElement('a');
+  a.href = URL.createObjectURL(blob);
+  a.download = name;
+  a.click();
+  URL.revokeObjectURL(a.href);
+}
+
+/* ═══════════════════════════════════════════════════════════
+   Message interactions
+   ═══════════════════════════════════════════════════════════ */
+els.messages.addEventListener('click', async e => {
+  const card = e.target.closest('[data-prompt]');
+  if (card) { els.input.value = card.dataset.prompt; syncComposer(); submit(); return; }
+
+  const follow = e.target.closest('[data-follow]');
+  if (follow) {
+    const label = follow.dataset.follow;
+    if (/^retry$/i.test(label)) {
+      const chat = activeChat();
+      const me = chat && [...chat.messages].reverse().find(m => m.role === 'user');
+      if (me) sendMessage(me.content);
+    } else {
+      els.input.value = label;
+      syncComposer();
+      submit();
+    }
+    return;
+  }
+
+  const tab = e.target.closest('[data-tab]');
+  if (tab) {
+    const wrap = tab.closest('.flex-1');
+    if (!wrap) return;
+    $$('[data-tab]', wrap).forEach(b => {
+      b.classList.toggle('on', b === tab);
+      b.setAttribute('aria-selected', b === tab ? 'true' : 'false');
+    });
+    $$('[data-pane]', wrap).forEach(p => p.classList.toggle('hidden', p.dataset.pane !== tab.dataset.tab));
+    if (tab.dataset.tab === 'results') {
+      const cv = wrap.querySelector('canvas[data-chart]');
+      if (cv) {
+        const chat = activeChat();
+        const m = chat && chat.messages.find(x => x.id === cv.dataset.chart);
+        if (m && m.chart) drawChart(cv, m.chart.labels, m.chart.values, m.chartType || 'bar');
+      }
+    }
+    return;
+  }
+
+  const chartTypeBtn = e.target.closest('[data-charttype]');
+  if (chartTypeBtn) {
+    const wrap = chartTypeBtn.closest('.flex-1') || chartTypeBtn.closest('[data-mid]');
+    const chat = activeChat();
+    const m = chat && chat.messages.find(x => x.id && wrap && wrap.querySelector(`canvas[data-chart="${x.id}"]`));
+    if (m) {
+      m.chartType = chartTypeBtn.dataset.charttype;
+      renderMessages();
+    }
+    return;
+  }
+
+  const sortTh = e.target.closest('[data-sortcol]');
+  if (sortTh) {
+    const midEl = sortTh.closest('[data-mid]');
+    const chat = activeChat();
+    const m = chat && chat.messages.find(x => x.id === midEl.dataset.mid);
+    if (m) {
+      const col = +sortTh.dataset.sortcol;
+      const dir = m.sort && m.sort.col === col ? -m.sort.dir : 1;
+      m.sort = { col, dir };
+      renderMessages();
+    }
+    return;
+  }
+
+  const copyCode = e.target.closest('[data-copy]');
+  if (copyCode) {
+    const code = copyCode.closest('div').parentElement.querySelector('pre code');
+    if (code) {
+      try {
+        await navigator.clipboard.writeText(code.textContent);
+        copyCode.textContent = 'Copied!';
+        copyCode.classList.add('text-fam-600', 'dark:text-fam-400');
+        setTimeout(() => { copyCode.textContent = 'Copy'; copyCode.classList.remove('text-fam-600', 'dark:text-fam-400'); }, 1400);
+      } catch (_) { toast('Could not copy'); }
+    }
+    return;
+  }
+
+  const copySql = e.target.closest('[data-copysql]');
+  if (copySql) {
+    const chat = activeChat();
+    const m = chat && chat.messages.find(x => x.id === copySql.dataset.copysql);
+    if (m && m.sql) {
+      try {
+        await navigator.clipboard.writeText(m.sql);
+        copySql.textContent = 'Copied!';
+        setTimeout(() => { copySql.textContent = 'Copy SQL'; }, 1400);
+      } catch (_) { toast('Could not copy'); }
+    }
+    return;
+  }
+
+  const csvBtn = e.target.closest('[data-csv]');
+  if (csvBtn) {
+    const chat = activeChat();
+    const m = chat && chat.messages.find(x => x.id === csvBtn.dataset.csv);
+    if (m) exportCSV(m);
+    return;
+  }
+
+  const copyRows = e.target.closest('[data-copyrows]');
+  if (copyRows) {
+    const chat = activeChat();
+    const m = chat && chat.messages.find(x => x.id === copyRows.dataset.copyrows);
+    if (m && m.meta) {
+      const text = [m.meta.columns.join('\t'), ...sortedRows(m).map(r => r.join('\t'))].join('\n');
+      try { await navigator.clipboard.writeText(text); toast('Rows copied', 'ok'); } catch (_) { toast('Could not copy'); }
+    }
+    return;
+  }
+
+  const act = e.target.closest('[data-act]');
+  if (!act) return;
+  const chat = activeChat();
+  if (!chat) return;
+  const msg = chat.messages.find(m => m.id === act.dataset.mid);
+  if (!msg) return;
+  const node = els.messages.querySelector(`[data-mid="${msg.id}"]`);
+  const action = act.dataset.act;
+
+  if (action === 'copy' || action === 'copy-user') {
+    try { await navigator.clipboard.writeText(msg.content); toast('Copied to clipboard', 'ok'); }
+    catch (_) { toast('Could not copy'); }
+  }
+  if (action === 'tts') {
+    if (ttsMsgId === msg.id) stopSpeak();
+    else speak(msg.content, msg.id);
+  }
+  if (action === 'regen' && !state.generating) {
+    const idx = chat.messages.indexOf(msg);
+    let userIdx = idx - 1;
+    while (userIdx >= 0 && chat.messages[userIdx].role !== 'user') userIdx--;
+    if (userIdx < 0) return;
+    const userMsg = chat.messages[userIdx];
+    chat.messages.splice(userIdx, 2);
+    renderMessages();
+    store.save();
+    sendMessage(userMsg.content);
+  }
+  if (action === 'like' || action === 'dislike') {
+    msg.feedback = action === 'like' ? 'up' : 'down';
+    renderMessages();
+    toast(action === 'like' ? 'Thanks — feedback recorded' : 'Thanks — Fami will do better', 'ok');
+  }
+  if (action === 'del') {
+    const ok = await confirmDlg({ title: 'Delete message', body: 'This message will be removed from the conversation.', okText: 'Delete' });
+    if (!ok) return;
+    const idx = chat.messages.indexOf(msg);
+    if (idx > -1) chat.messages.splice(idx, 1);
+    renderMessages(true);
+    store.save();
+  }
+  if (action === 'edit' && msg.role === 'user' && node) {
+    const bubble = node.querySelector('[data-bubble]');
+    if (!bubble) return;
+    bubble.innerHTML = `
+      <textarea data-editarea class="edit-area w-full bg-white/10 rounded-lg px-2 py-1.5 outline-none resize-none text-[14px]" rows="2">${escapeHtml(msg.content)}</textarea>
+      <div class="flex justify-end gap-2 mt-2">
+        <button data-act="cancel-edit" class="px-2.5 py-1 rounded-lg text-[11.5px] font-medium bg-white/15 hover:bg-white/25 transition">Cancel</button>
+        <button data-act="save-edit" class="px-2.5 py-1 rounded-lg text-[11.5px] font-semibold bg-white text-fam-700 hover:bg-fam-50 transition">Save & resend</button>
+      </div>`;
+    bubble.querySelector('textarea').focus();
+  }
+  if (action === 'cancel-edit') renderMessages();
+  if (action === 'save-edit' && node) {
+    const area = node.querySelector('[data-editarea]');
+    const val = area ? area.value.trim() : '';
+    if (!val) return renderMessages();
+    const idx = chat.messages.indexOf(msg);
+    chat.messages.length = idx;          // drop the edited message and everything after
+    renderMessages(true);
+    store.save();
+    sendMessage(val);
+  }
+});
+
+/* ═══════════════════════════════════════════════════════════
+   Sidebar interactions
+   ═══════════════════════════════════════════════════════════ */
+els.chatList.addEventListener('click', e => {
+  const del = e.target.closest('[data-del]');
+  if (del) { e.stopPropagation(); deleteChat(del.dataset.del); return; }
+  const item = e.target.closest('[data-chat]');
+  if (item) selectChat(item.dataset.chat);
+});
+els.chatList.addEventListener('dblclick', e => {
+  const item = e.target.closest('[data-chat]');
+  if (item) renameChat(item.dataset.chat);
+});
+els.newChatBtn.addEventListener('click', newChat);
+els.searchChats.addEventListener('input', e => { state.filter = e.target.value; renderSidebar(); });
+
+function openSidebarMobile() { els.sidebarWrap.classList.remove('-translate-x-full'); els.backdrop.classList.remove('hidden'); }
+function closeSidebarMobile() {
+  if (window.innerWidth < 1024) {
+    els.sidebarWrap.classList.add('-translate-x-full');
+    els.backdrop.classList.add('hidden');
+  }
+}
+els.menuBtn.addEventListener('click', openSidebarMobile);
+els.backdrop.addEventListener('click', closeSidebarMobile);
+const toggleDesktopSidebar = () => els.sidebarWrap.classList.toggle('sidebar-collapsed');
+els.collapseBtn.addEventListener('click', toggleDesktopSidebar);
+els.desktopToggle.addEventListener('click', toggleDesktopSidebar);
+
+/* Connection pill — simulated latency / offline toggle */
+let offline = false;
+els.connPill.addEventListener('click', () => {
+  offline = !offline;
+  els.dbDot.className = `w-1.5 h-1.5 rounded-full ${offline ? 'bg-rose-500 animate-pulse' : 'bg-fam-400'}`;
+  els.dbMode.textContent = offline ? 'Reconnecting…' : 'On-prem';
+  els.latText.textContent = offline ? '—' : '12 ms';
+  if (offline) {
+    sfx.error();
+    toast('Connection lost — retrying', 'err');
+    setTimeout(() => {
+      offline = false;
+      els.dbDot.className = 'w-1.5 h-1.5 rounded-full bg-fam-400';
+      els.dbMode.textContent = 'On-prem';
+      els.latText.textContent = '12 ms';
+      toast('Reconnected to FAMASSER ERP', 'ok');
+    }, 2200);
+  }
+});
+
+/* ═══════════════════════════════════════════════════════════
+   Drawer — workspace tools
+   ═══════════════════════════════════════════════════════════ */
+const DRAWERS = {
+  prompts:   { title: 'Prompt library',  icon: 'book' },
+  history:   { title: 'SQL history',     icon: 'history' },
+  schema:    { title: 'Schema explorer', icon: 'database' },
+  shortcuts: { title: 'Shortcuts',       icon: 'keyboard' },
+  sap:       { title: 'SAP Copilot connection', icon: 'server' },
+};
+let currentDrawer = null;
+
+function openDrawer(name) {
+  currentDrawer = name;
+  const meta = DRAWERS[name];
+  els.drawerTitle.textContent = meta.title;
+  els.drawerIcon.innerHTML = ic(meta.icon, 'w-4 h-4');
+  renderDrawerBody(name);
+  els.drawer.classList.remove('translate-x-full');
+  els.drawerBackdrop.classList.remove('hidden');
+  sfx.open();
+}
+function closeDrawer() {
+  currentDrawer = null;
+  els.drawer.classList.add('translate-x-full');
+  els.drawerBackdrop.classList.add('hidden');
+}
+els.drawerClose.addEventListener('click', closeDrawer);
+els.drawerBackdrop.addEventListener('click', closeDrawer);
+els.toolsNav.addEventListener('click', e => {
+  const btn = e.target.closest('[data-tool]');
+  if (!btn) return;
+  if (btn.dataset.tool === 'settings') openSettings();
+  else openDrawer(btn.dataset.tool);
+});
+els.toolsBtn.addEventListener('click', () => openDrawer('prompts'));
+
+function renderDrawerBody(name) {
+  const body = els.drawerBody;
+  if (name === 'prompts') {
+    const all = [...state.prompts, ...DEFAULT_PROMPTS];
+    body.innerHTML = `
+      <button id="saveDraftPrompt" class="w-full flex items-center justify-center gap-2 px-3 py-2.5 mb-4 rounded-xl border border-dashed border-fam-500/40 text-[12.5px] font-medium text-fam-600 dark:text-fam-400 hover:bg-fam-500/[0.06] transition">
+        ${ic('plus','w-4 h-4')} Save current draft as prompt
+      </button>
+      ${all.map((p, i) => `
+        <div class="group p-3 mb-2 rounded-xl border border-zinc-200 dark:border-white/[0.07] hover:border-fam-400/50 transition">
+          <div class="flex items-center gap-2">
+            <span class="text-[12.5px] font-semibold flex-1 truncate">${escapeHtml(p.title)}</span>
+            ${i < state.prompts.length ? `<button data-delprompt="${i}" class="icon-btn w-6 h-6 opacity-0 group-hover:opacity-100 hover:!text-rose-500">${ic('trash','w-3 h-3')}</button>` : ''}
+          </div>
+          <p class="text-[11.5px] text-zinc-500 dark:text-zinc-400 mt-1 leading-relaxed line-clamp-2">${escapeHtml(p.text)}</p>
+          <button data-useprompt="${escapeHtml(p.text)}" class="mt-2 text-[11px] font-semibold text-fam-600 dark:text-fam-400 hover:underline">Use this prompt →</button>
+        </div>`).join('')}`;
+  }
+  if (name === 'history') {
+    if (!state.history.length) {
+      body.innerHTML = `<div class="text-center py-10 text-[12.5px] text-zinc-400">No queries yet.<br>Ask Fami something to populate this log.</div>`;
+    } else {
+      body.innerHTML = [...state.history].reverse().map((h, i) => `
+        <div class="p-3 mb-2 rounded-xl border border-zinc-200 dark:border-white/[0.07]">
+          <div class="flex items-center gap-2 text-[10.5px] text-zinc-400 mb-1.5">
+            ${ic('clock','w-3 h-3')} ${new Date(h.ts).toLocaleString()}
+            <span class="ml-auto font-mono">${h.rows != null ? h.rows.toLocaleString() + ' rows' : ''}</span>
+          </div>
+          <pre class="font-mono text-[10.5px] leading-relaxed text-zinc-600 dark:text-zinc-300 overflow-x-auto whitespace-pre-wrap max-h-28 overflow-y-auto">${escapeHtml((h.sql || '').slice(0, 400))}</pre>
+          <button data-copyhistory="${state.history.length - 1 - i}" class="mt-2 text-[11px] font-semibold text-fam-600 dark:text-fam-400 hover:underline">Copy SQL</button>
+        </div>`).join('');
+    }
+  }
+  if (name === 'schema') {
+    body.innerHTML = `
+      <div class="relative mb-3">
+        <svg class="absolute left-3 top-1/2 -translate-y-1/2 w-3.5 h-3.5 text-zinc-400" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><circle cx="11" cy="11" r="7"/><path stroke-linecap="round" d="m20 20-3.5-3.5"/></svg>
+        <input id="schemaSearch" placeholder="Filter tables…" class="w-full pl-9 pr-3 py-2 text-[12.5px] rounded-xl bg-zinc-100 dark:bg-white/[0.04] border border-transparent focus:border-fam-500/40 outline-none transition" />
+      </div>
+      <div id="schemaList">
+        ${SCHEMA_TABLES.map((t, i) => `
+          <details class="mb-2 rounded-xl border border-zinc-200 dark:border-white/[0.07] overflow-hidden group" data-tbl="${escapeHtml(t.name)}" data-desc="${escapeHtml(t.desc.toLowerCase())}">
+            <summary class="flex items-center gap-2.5 px-3 py-2.5 cursor-pointer hover:bg-zinc-50 dark:hover:bg-white/[0.03] transition list-none">
+              <span class="font-mono text-[12px] font-semibold text-fam-600 dark:text-fam-400">${t.name}</span>
+              <span class="flex-1 min-w-0 truncate text-[11px] text-zinc-500 dark:text-zinc-400">${t.desc}</span>
+              <span class="text-[10px] font-mono text-zinc-400 shrink-0">${t.rows}</span>
+              <svg class="chev w-3.5 h-3.5 text-zinc-400 shrink-0" fill="none" stroke="currentColor" stroke-width="2.2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="m6 9 6 6 6-6"/></svg>
+            </summary>
+            <div class="px-3 pb-3 border-t border-zinc-100 dark:border-white/[0.05]">
+              <table class="res-table mt-2">
+                <thead><tr><th>Column</th><th>Type</th><th>Key</th></tr></thead>
+                <tbody>${t.columns.map(c => `<tr><td class="font-mono text-[11px]">${c[0]}</td><td class="text-zinc-500">${c[1]}</td><td class="text-zinc-500">${c[2]}</td></tr>`).join('')}</tbody>
+              </table>
+              <button data-asktable="${t.name}" class="mt-2 text-[11px] font-semibold text-fam-600 dark:text-fam-400 hover:underline">Ask about this table →</button>
+            </div>
+          </details>`).join('')}
+      </div>`;
+  }
+  if (name === 'shortcuts') {
+    const rows = [
+      ['Send message', 'Enter'], ['New line', 'Shift + Enter'], ['Command palette', '⌘ / Ctrl + K'],
+      ['Find in conversation', 'Ctrl + F'], ['New conversation', '⌘ + Alt + N'], ['Focus mode', 'F'],
+      ['Voice mode', 'V'], ['Toggle theme', 'T'], ['Shortcuts panel', '?'], ['Close / cancel', 'Esc'],
+    ];
+    body.innerHTML = `
+      <p class="text-[12px] text-zinc-500 dark:text-zinc-400 mb-4 leading-relaxed">Fami is built for the keyboard. Every action is a keystroke away.</p>
+      ${rows.map(r => `
+        <div class="flex items-center justify-between py-2 border-b border-zinc-100 dark:border-white/[0.05] last:border-0">
+          <span class="text-[12.5px] text-zinc-600 dark:text-zinc-300">${r[0]}</span>
+          <kbd class="text-[10.5px] font-mono px-2 py-1 rounded-md bg-zinc-100 dark:bg-white/[0.07] text-zinc-500 dark:text-zinc-400">${r[1]}</kbd>
+        </div>`).join('')}`;
+  }
+  if (name === 'sap') {
+    const s = settings.sap;
+    body.innerHTML = `
+      <div class="flex items-center gap-3 p-3.5 rounded-xl border border-zinc-200 dark:border-white/[0.08] mb-4">
+        <span id="sapStatusDot" class="w-2.5 h-2.5 rounded-full shrink-0 ${settings.sapEnabled ? 'bg-fam-500' : 'bg-zinc-300 dark:bg-zinc-600'}"></span>
+        <div class="min-w-0">
+          <div id="sapStatusText" class="text-[12.5px] font-semibold">${settings.sapEnabled ? 'Ready to connect' : 'Not connected'}</div>
+          <div class="text-[10.5px] text-zinc-400">Simulated · no live backend wired yet</div>
+        </div>
+      </div>
+
+      <p class="text-[11.5px] text-zinc-500 dark:text-zinc-400 leading-relaxed mb-4">
+        These settings are stored on this device and are ready for your real
+        <strong class="text-zinc-700 dark:text-zinc-200">Copilot SAP</strong> backend — point them at your
+        SAP Service Layer once it's exposed and Fami's demo pipeline can be swapped for live calls.
+      </p>
+
+      <div class="text-[10.5px] font-semibold uppercase tracking-widest text-zinc-400 mb-2">Environment</div>
+      <div class="grid grid-cols-2 gap-1.5 mb-4" id="sapEnvGroup">
+        ${[['onprem','On-premise'],['cloud','SAP BTP Cloud']].map(o => `
+          <button data-sapenv="${o[0]}" class="flex items-center justify-center gap-1.5 py-2.5 rounded-xl border text-[12px] font-medium transition
+            ${s.env === o[0] ? 'border-fam-500/60 bg-fam-500/[0.08] text-fam-600 dark:text-fam-400' : 'border-zinc-200 dark:border-white/10 text-zinc-500 dark:text-zinc-400 hover:border-fam-500/40'}">
+            ${o[1]}
+          </button>`).join('')}
+      </div>
+
+      <div class="space-y-3 mb-4">
+        <label class="block">
+          <span class="block text-[10.5px] font-semibold uppercase tracking-widest text-zinc-400 mb-1.5">Service Layer URL</span>
+          <input data-sapfield="serviceLayerUrl" value="${escapeHtml(s.serviceLayerUrl)}" placeholder="https://sap-server:50000/b1s/v1"
+                 class="w-full px-3 py-2 text-[12.5px] font-mono rounded-xl bg-zinc-100 dark:bg-white/[0.04] border border-transparent focus:border-fam-500/40 outline-none transition" />
+        </label>
+        <label class="block">
+          <span class="block text-[10.5px] font-semibold uppercase tracking-widest text-zinc-400 mb-1.5">Company database</span>
+          <input data-sapfield="companyDb" value="${escapeHtml(s.companyDb)}" placeholder="SBO_FAMASSER_PROD"
+                 class="w-full px-3 py-2 text-[12.5px] font-mono rounded-xl bg-zinc-100 dark:bg-white/[0.04] border border-transparent focus:border-fam-500/40 outline-none transition" />
+        </label>
+        <label class="block">
+          <span class="block text-[10.5px] font-semibold uppercase tracking-widest text-zinc-400 mb-1.5">Service username</span>
+          <input data-sapfield="username" value="${escapeHtml(s.username)}" placeholder="fami_service_account"
+                 class="w-full px-3 py-2 text-[12.5px] font-mono rounded-xl bg-zinc-100 dark:bg-white/[0.04] border border-transparent focus:border-fam-500/40 outline-none transition" />
+        </label>
+      </div>
+
+      <label class="flex items-center gap-3 px-3 py-2.5 rounded-xl hover:bg-zinc-50 dark:hover:bg-white/[0.03] cursor-pointer transition mb-4">
+        <input type="checkbox" id="sapEnabledToggle" ${settings.sapEnabled ? 'checked' : ''} class="w-4 h-4 rounded accent-fam-600" />
+        <span class="flex-1">
+          <span class="block text-[12.5px] font-medium text-zinc-700 dark:text-zinc-200">Enable Copilot SAP sync</span>
+          <span class="block text-[10.5px] text-zinc-400">Switches Fami's answers from demo data to this connection once your API is live</span>
+        </span>
+      </label>
+
+      <div class="flex items-center gap-2">
+        <button id="sapTestBtn" class="flex-1 flex items-center justify-center gap-2 px-3 py-2.5 rounded-xl border border-zinc-200 dark:border-white/10 text-[12.5px] font-medium text-zinc-600 dark:text-zinc-300 hover:border-fam-500/40 hover:text-fam-600 dark:hover:text-fam-400 transition">
+          ${ic('plug','w-4 h-4')} Test connection
+        </button>
+        <button id="sapSaveBtn" class="flex-1 px-3 py-2.5 rounded-xl text-[12.5px] font-semibold text-white bg-fam-700 hover:bg-fam-600 shadow-md shadow-fam-700/25 active:scale-[.97] transition">
+          Save configuration
+        </button>
+      </div>`;
+  }
+}
+
+function syncSapNavDot() {
+  if (els.sapNavDot) els.sapNavDot.className = `ml-auto w-1.5 h-1.5 rounded-full ${settings.sapEnabled ? 'bg-fam-500' : 'bg-zinc-300 dark:bg-zinc-600'}`;
+}
+
+els.drawerBody.addEventListener('click', async e => {
+  const use = e.target.closest('[data-useprompt]');
+  if (use) { els.input.value = use.dataset.useprompt; syncComposer(); closeDrawer(); els.input.focus(); return; }
+  const delP = e.target.closest('[data-delprompt]');
+  if (delP) { state.prompts.splice(+delP.dataset.delprompt, 1); renderDrawerBody('prompts'); store.save(); return; }
+  if (e.target.closest('#saveDraftPrompt')) {
+    const text = els.input.value.trim();
+    if (!text) return toast('Type a draft in the composer first');
+    const title = text.length > 42 ? text.slice(0, 42) + '…' : text;
+    state.prompts.unshift({ title, text });
+    renderDrawerBody('prompts');
+    store.save();
+    toast('Prompt saved', 'ok');
+    return;
+  }
+  const cpH = e.target.closest('[data-copyhistory]');
+  if (cpH) {
+    const h = state.history[+cpH.dataset.copyhistory];
+    if (h && h.sql) { try { await navigator.clipboard.writeText(h.sql); toast('SQL copied', 'ok'); } catch (_) {} }
+    return;
+  }
+  const ask = e.target.closest('[data-asktable]');
+  if (ask) {
+    els.input.value = `Show me a sample of the ${ask.dataset.asktable} table and explain its most useful columns.`;
+    syncComposer();
+    closeDrawer();
+    els.input.focus();
+    return;
+  }
+  const envBtn = e.target.closest('[data-sapenv]');
+  if (envBtn) { settings.sap.env = envBtn.dataset.sapenv; renderDrawerBody('sap'); return; }
+  if (e.target.closest('#sapTestBtn')) {
+    const btn = e.target.closest('#sapTestBtn');
+    btn.disabled = true;
+    btn.innerHTML = `<span class="step-spin"></span> Testing…`;
+    await sleep(900 + Math.random() * 500);
+    btn.disabled = false;
+    btn.innerHTML = `${ic('plug','w-4 h-4')} Test connection`;
+    toast('Simulated — wire your Service Layer endpoint to go live', 'info');
+    return;
+  }
+  if (e.target.closest('#sapSaveBtn')) {
+    settings.sapEnabled = !!$('#sapEnabledToggle')?.checked;
+    $$('#drawerBody [data-sapfield]').forEach(inp => { settings.sap[inp.dataset.sapfield] = inp.value.trim(); });
+    store.save();
+    syncSapNavDot();
+    renderDrawerBody('sap');
+    toast('SAP configuration saved locally', 'ok');
+    return;
+  }
+});
+els.drawerBody.addEventListener('input', e => {
+  if (e.target.id === 'schemaSearch') {
+    const q = e.target.value.toLowerCase();
+    $$('#schemaList [data-tbl]').forEach(el => {
+      el.classList.toggle('hidden', !(el.dataset.tbl.toLowerCase().includes(q) || el.dataset.desc.includes(q)));
+    });
+  }
+  if (e.target.dataset && e.target.dataset.sapfield) {
+    settings.sap[e.target.dataset.sapfield] = e.target.value;
+  }
+});
+
+/* ═══════════════════════════════════════════════════════════
+   Find in conversation
+   ═══════════════════════════════════════════════════════════ */
+let findMatches = [], findIdx = -1;
+function openFind() {
+  els.findBar.classList.remove('hidden');
+  setTimeout(() => els.findInput.focus(), 20);
+}
+function closeFind() {
+  els.findBar.classList.add('hidden');
+  els.findInput.value = '';
+  $$('#messages [data-mid]').forEach(el => el.classList.remove('find-dim'));
+  els.findCount.textContent = '';
+  findMatches = []; findIdx = -1;
+}
+function runFind(dir = 0) {
+  const q = els.findInput.value.trim().toLowerCase();
+  findMatches = [];
+  if (q.length < 1) {
+    $$('#messages [data-mid]').forEach(el => el.classList.remove('find-dim'));
+    els.findCount.textContent = '';
+    return;
+  }
+  $$('#messages [data-mid]').forEach(el => {
+    const hit = el.textContent.toLowerCase().includes(q);
+    el.classList.toggle('find-dim', !hit);
+    if (hit) findMatches.push(el);
+  });
+  if (!findMatches.length) { els.findCount.textContent = '0 / 0'; return; }
+  findIdx = (findIdx + dir + findMatches.length) % findMatches.length;
+  els.findCount.textContent = `${findIdx + 1} / ${findMatches.length}`;
+  findMatches[findIdx].scrollIntoView({ block: 'center', behavior: 'smooth' });
+}
+els.findBtn.addEventListener('click', openFind);
+els.findClose.addEventListener('click', closeFind);
+els.findInput.addEventListener('input', () => { findIdx = -1; runFind(1); });
+els.findInput.addEventListener('keydown', e => {
+  if (e.key === 'Enter') { e.preventDefault(); runFind(e.shiftKey ? -1 : 1); }
+  if (e.key === 'Escape') { e.stopPropagation(); closeFind(); els.input.focus(); }
+  e.stopPropagation();
+});
+els.findPrev.addEventListener('click', () => runFind(-1));
+els.findNext.addEventListener('click', () => runFind(1));
+
+/* ═══════════════════════════════════════════════════════════
+   Model selector
+   ═══════════════════════════════════════════════════════════ */
+function switchModel(id) {
+  const m = MODELS.find(x => x.id === id);
+  if (!m) return;
+  state.model = m;
+  els.modelName.textContent = m.name;
+  els.modelGlyph.textContent = m.glyph;
+  els.modelGlyph.className = `w-6 h-6 rounded-lg bg-gradient-to-br ${m.grad} grid place-items-center text-white text-[11px] shadow-sm font-semibold`;
+  toast(`Switched to ${m.name}`, 'ok');
+  sfx.pop();
+}
+function renderModelMenu() {
+  els.modelMenu.innerHTML = `
+    <div class="px-2.5 py-1.5 text-[10px] font-semibold uppercase tracking-widest text-zinc-400">Fami models</div>
+    ${MODELS.map(m => `
+      <button data-model="${m.id}" role="menuitem"
+              class="w-full flex items-center gap-3 px-2.5 py-2 rounded-xl text-left transition
+                     ${m.id === state.model.id ? 'bg-fam-500/10 dark:bg-fam-500/[0.14]' : 'hover:bg-zinc-100 dark:hover:bg-white/[0.05]'}">
+        <span class="w-7 h-7 rounded-lg bg-gradient-to-br ${m.grad} grid place-items-center text-white text-[12px] shadow-sm shrink-0 font-semibold">${m.glyph}</span>
+        <span class="flex-1 min-w-0">
+          <span class="flex items-center gap-1.5">
+            <span class="text-[13px] font-semibold text-zinc-800 dark:text-slate-100">${m.name}</span>
+            ${m.badge ? `<span class="text-[9px] font-bold uppercase px-1.5 py-0.5 rounded-full bg-fam-500/15 text-fam-600 dark:text-fam-300">${m.badge}</span>` : ''}
+          </span>
+          <span class="block text-[11px] text-zinc-400 truncate">${m.desc}</span>
+        </span>
+        ${m.id === state.model.id ? `<span class="text-fam-500">${ic('check','w-4 h-4')}</span>` : ''}
+      </button>`).join('')}`;
+}
+els.modelBtn.addEventListener('click', e => {
+  e.stopPropagation();
+  renderModelMenu();
+  els.modelMenu.classList.toggle('hidden');
+});
+els.modelMenu.addEventListener('click', e => {
+  const btn = e.target.closest('[data-model]');
+  if (btn) switchModel(btn.dataset.model);
+  els.modelMenu.classList.add('hidden');
+});
+
+/* ═══════════════════════════════════════════════════════════
+   "More" menu
+   ═══════════════════════════════════════════════════════════ */
+function renderMoreMenu() {
+  const item = (id, icon, label, kbd = '', danger = false) => `
+    <button data-more="${id}" class="menu-item ${danger ? 'danger' : ''}">${ic(icon,'w-4 h-4')} ${label} ${kbd ? `<kbd>${kbd}</kbd>` : ''}</button>`;
+  els.moreMenu.innerHTML =
+    item('md', 'fileText', 'Copy as Markdown') +
+    item('export', 'download', 'Export JSON') +
+    item('print', 'print', 'Print', 'P') +
+    `<div class="my-1 border-t border-zinc-100 dark:border-white/[0.06]"></div>` +
+    item('voice', 'waveform', 'Voice mode', 'V') +
+    item('prompts', 'book', 'Prompt library') +
+    item('history', 'history', 'SQL history') +
+    item('schema', 'database', 'Schema explorer') +
+    item('sap', 'server', 'SAP Copilot connection') +
+    `<div class="my-1 border-t border-zinc-100 dark:border-white/[0.06]"></div>` +
+    item('sounds', settings.sounds ? 'volumeX' : 'volume', settings.sounds ? 'Mute sounds' : 'Enable sounds') +
+    item('theme', 'moon', 'Toggle theme', 'T') +
+    item('zen', 'maximize', 'Focus mode', 'F') +
+    item('settings', 'settings', 'Settings', ',') +
+    `<div class="my-1 border-t border-zinc-100 dark:border-white/[0.06]"></div>` +
+    item('clear', 'trash', 'Clear conversation', '', true) +
+    item('about', 'info', 'About Fami');
+}
+els.moreBtn.addEventListener('click', e => {
+  e.stopPropagation();
+  renderMoreMenu();
+  els.moreMenu.classList.toggle('hidden');
+});
+els.moreMenu.addEventListener('click', async e => {
+  const btn = e.target.closest('[data-more]');
+  if (!btn) return;
+  els.moreMenu.classList.add('hidden');
+  const id = btn.dataset.more;
+  if (id === 'md') copyChatMarkdown();
+  if (id === 'export') exportChat();
+  if (id === 'print') window.print();
+  if (id === 'voice') openVoiceMode();
+  if (id === 'prompts') openDrawer('prompts');
+  if (id === 'history') openDrawer('history');
+  if (id === 'schema') openDrawer('schema');
+  if (id === 'sap') openDrawer('sap');
+  if (id === 'sounds') { settings.sounds = !settings.sounds; store.save(); toast(settings.sounds ? 'Sounds on' : 'Sounds off'); }
+  if (id === 'theme') toggleTheme();
+  if (id === 'zen') toggleZen();
+  if (id === 'settings') openSettings();
+  if (id === 'clear') clearChat();
+  if (id === 'about') toast('Fami v2.0 · FAMASSER Intelligence · on-prem Qwen 3');
+});
+document.addEventListener('click', e => {
+  if (!e.target.closest('#moreBtn') && !e.target.closest('#moreMenu')) els.moreMenu.classList.add('hidden');
+  if (!e.target.closest('#modelBtn') && !e.target.closest('#modelMenu')) els.modelMenu.classList.add('hidden');
+});
+
+/* ═══════════════════════════════════════════════════════════
+   Chat-level actions
+   ═══════════════════════════════════════════════════════════ */
+async function clearChat() {
+  const c = activeChat();
+  if (!c || !c.messages.length) return;
+  const ok = await confirmDlg({ title: 'Clear conversation', body: 'All messages in this conversation will be removed.', okText: 'Clear' });
+  if (!ok) return;
+  c.messages = [];
+  c.title = 'New conversation';
+  renderSidebar();
+  renderMessages(true);
+  store.save();
+  toast('Chat cleared');
+}
+function exportChat() {
+  const c = activeChat();
+  if (!c) return;
+  downloadBlob(JSON.stringify(c, null, 2), `famasser-${c.title.replace(/\s+/g, '-').toLowerCase()}.json`, 'application/json');
+  toast('Exported', 'ok');
+}
+function chatToMarkdown(c) {
+  const lines = [`# ${c.title}`, ''];
+  for (const m of c.messages) {
+    lines.push(m.role === 'user' ? '## You' : '## Fami');
+    lines.push('');
+    lines.push(m.content || '');
+    if (m.sql) { lines.push('', '```sql', m.sql, '```'); }
+    lines.push('');
+  }
+  return lines.join('\n');
+}
+function copyChatMarkdown() {
+  const c = activeChat();
+  if (!c || !c.messages.length) return toast('Nothing to export');
+  navigator.clipboard.writeText(chatToMarkdown(c))
+    .then(() => toast('Markdown copied', 'ok'))
+    .catch(() => toast('Could not copy'));
+}
+els.shareBtn.addEventListener('click', () => {
+  const c = activeChat();
+  if (!c) return;
+  const summary = `FAMASSER Intelligence — "${c.title}" · ${c.messages.length} messages · exported ${new Date().toLocaleString()}`;
+  navigator.clipboard.writeText(summary).then(() => toast('Share summary copied', 'ok')).catch(() => toast('Could not copy'));
+});
+els.printBtn.addEventListener('click', () => window.print());
+
+/* ═══════════════════════════════════════════════════════════
+   Theme · Zen · Settings
+   ═══════════════════════════════════════════════════════════ */
+function applyTheme(mode) {
+  let dark;
+  if (mode === 'system') dark = window.matchMedia('(prefers-color-scheme: dark)').matches;
+  else dark = mode === 'dark';
+  document.documentElement.classList.toggle('dark', dark);
+  drawAllCharts();
+}
+function toggleTheme() {
+  const dark = !document.documentElement.classList.contains('dark');
+  settings.theme = dark ? 'dark' : 'light';
+  applyTheme(settings.theme);
+  store.save();
+}
+els.themeBtn.addEventListener('click', toggleTheme);
+
+function toggleZen() {
+  document.body.classList.toggle('zen');
+  toast(document.body.classList.contains('zen') ? 'Focus mode on — press F or Esc to exit' : 'Focus mode off');
+}
+els.zenBtn.addEventListener('click', toggleZen);
+els.zenExit.addEventListener('click', toggleZen);
+
+function applyFontSize() {
+  document.documentElement.style.setProperty('--msgfs', settings.fontSize + 'px');
+}
+function openSettings() {
+  const sel = (id, val) => `id="${id}" data-set="${val}"`;
+  els.settingsBody.innerHTML = `
+    <div>
+      <div class="text-[10.5px] font-semibold uppercase tracking-widest text-zinc-400 mb-2">Appearance</div>
+      <div class="grid grid-cols-3 gap-1.5" id="setTheme">
+        ${[['dark','moon','Dark'],['light','sun','Light'],['system','monitor','System']].map(t => `
+          <button data-themeopt="${t[0]}" class="flex flex-col items-center gap-1.5 py-3 rounded-xl border transition
+            ${settings.theme === t[0] ? 'border-fam-500/60 bg-fam-500/[0.08] text-fam-600 dark:text-fam-400' : 'border-zinc-200 dark:border-white/10 text-zinc-500 dark:text-zinc-400 hover:border-fam-500/40'}">
+            ${ic(t[1],'w-4.5 h-4.5 w-5 h-5')}<span class="text-[11px] font-medium">${t[2]}</span>
+          </button>`).join('')}
+      </div>
+    </div>
+    <div>
+      <div class="flex items-center justify-between mb-2">
+        <div class="text-[10.5px] font-semibold uppercase tracking-widest text-zinc-400">Message font size</div>
+        <span class="text-[11px] font-mono text-zinc-400" id="fontSizeVal">${settings.fontSize}px</span>
+      </div>
+      <input id="setFont" type="range" min="13" max="17" step="0.5" value="${settings.fontSize}"
+             class="w-full accent-fam-600" />
+    </div>
+    <div>
+      <div class="text-[10.5px] font-semibold uppercase tracking-widest text-zinc-400 mb-2">Behaviour</div>
+      <div class="space-y-1">
+        ${[['sounds','Interface sounds','Subtle audio feedback on actions'],
+           ['autoTTS','Read replies aloud','Fami speaks every answer when it arrives'],
+           ['enterSend','Enter sends message','Off = Enter adds a new line'],
+           ['followups','Show follow-up chips','Suggested next questions under answers']].map(o => `
+          <label class="flex items-center gap-3 px-3 py-2.5 rounded-xl hover:bg-zinc-50 dark:hover:bg-white/[0.03] cursor-pointer transition">
+            <input type="checkbox" data-set="${o[0]}" ${settings[o[0]] ? 'checked' : ''}
+                   class="w-4 h-4 rounded accent-fam-600" />
+            <span class="flex-1">
+              <span class="block text-[12.5px] font-medium text-zinc-700 dark:text-zinc-200">${o[1]}</span>
+              <span class="block text-[10.5px] text-zinc-400">${o[2]}</span>
+            </span>
+          </label>`).join('')}
+      </div>
+    </div>
+    <div>
+      <div class="text-[10.5px] font-semibold uppercase tracking-widest text-zinc-400 mb-2">Integrations</div>
+      <label class="flex items-center gap-3 px-3 py-2.5 rounded-xl hover:bg-zinc-50 dark:hover:bg-white/[0.03] cursor-pointer transition">
+        <input type="checkbox" data-set="sapEnabled" ${settings.sapEnabled ? 'checked' : ''} class="w-4 h-4 rounded accent-fam-600" />
+        <span class="flex-1">
+          <span class="flex items-center gap-1.5 text-[12.5px] font-medium text-zinc-700 dark:text-zinc-200">
+            Copilot SAP sync
+            <span class="text-[9px] font-bold uppercase px-1.5 py-0.5 rounded-full bg-fam-500/15 text-fam-600 dark:text-fam-300">Beta</span>
+          </span>
+          <span class="block text-[10.5px] text-zinc-400">Feeds Fami from your live SAP Service Layer instead of demo data</span>
+        </span>
+      </label>
+      <button id="openSapDrawerBtn" class="mt-1.5 w-full flex items-center justify-center gap-2 px-3 py-2.5 rounded-xl border border-dashed border-fam-500/40 text-[12px] font-medium text-fam-600 dark:text-fam-400 hover:bg-fam-500/[0.06] transition">
+        ${ic('server','w-3.5 h-3.5')} Configure SAP connection →
+      </button>
+    </div>`;
+  els.settingsModal.classList.remove('hidden');
+}
+function closeSettings() { els.settingsModal.classList.add('hidden'); }
+els.settingsClose.addEventListener('click', closeSettings);
+els.settingsBackdrop.addEventListener('click', closeSettings);
+els.settingsBody.addEventListener('click', e => {
+  if (e.target.closest('#openSapDrawerBtn')) { closeSettings(); openDrawer('sap'); return; }
+  const opt = e.target.closest('[data-themeopt]');
+  if (!opt) return;
+  settings.theme = opt.dataset.themeopt;
+  applyTheme(settings.theme);
+  openSettings();
+});
+els.settingsBody.addEventListener('input', e => {
+  if (e.target.id === 'setFont') {
+    settings.fontSize = parseFloat(e.target.value);
+    $('#fontSizeVal').textContent = settings.fontSize + 'px';
+    applyFontSize();
+  }
+});
+els.settingsSave.addEventListener('click', () => {
+  $$('#settingsBody [data-set]').forEach(input => { settings[input.dataset.set] = input.checked; });
+  store.save();
+  syncSapNavDot();
+  closeSettings();
+  toast('Settings saved', 'ok');
+});
+els.settingsReset.addEventListener('click', async () => {
+  const ok = await confirmDlg({ title: 'Reset all data', body: 'Conversations, prompts, SQL history and settings will be wiped. This cannot be undone.', okText: 'Reset everything' });
+  if (!ok) return;
+  store.clear();
+  location.reload();
+});
+
+/* ═══════════════════════════════════════════════════════════
+   Command palette
+   ═══════════════════════════════════════════════════════════ */
+const COMMANDS = [
+  { id:'new',     icon:'plus',     label:'New conversation',   hint:'⌘K',  run: newChat },
+  { id:'find',    icon:'search',   label:'Find in conversation', hint:'Ctrl F', run: openFind },
+  { id:'prompts', icon:'book',     label:'Prompt library',     hint:'',    run: () => openDrawer('prompts') },
+  { id:'history', icon:'history',  label:'SQL history',        hint:'',    run: () => openDrawer('history') },
+  { id:'schema',  icon:'database', label:'Schema explorer',    hint:'',    run: () => openDrawer('schema') },
+  { id:'sap',     icon:'server',   label:'SAP Copilot connection', hint:'', run: () => openDrawer('sap') },
+  { id:'voice',   icon:'waveform', label:'Voice mode',         hint:'V',   run: openVoiceMode },
+  { id:'shortcuts',icon:'keyboard',label:'Keyboard shortcuts', hint:'?',   run: () => openDrawer('shortcuts') },
+  { id:'zen',     icon:'maximize', label:'Toggle focus mode',  hint:'F',   run: toggleZen },
+  { id:'theme',   icon:'moon',     label:'Toggle theme',       hint:'T',   run: toggleTheme },
+  { id:'sounds',  icon:'volume',   label:'Toggle sounds',      hint:'',    run: () => { settings.sounds = !settings.sounds; store.save(); toast(settings.sounds ? 'Sounds on' : 'Sounds off'); } },
+  { id:'clear',   icon:'trash',    label:'Clear current chat', hint:'',    run: clearChat },
+  { id:'upload',  icon:'download', label:'Attach files…',      hint:'',    run: () => els.fileInput.click() },
+  { id:'folder',  icon:'box',      label:'Upload folder…',     hint:'',    run: () => els.folderInput.click() },
+  { id:'md',      icon:'fileText', label:'Copy as Markdown',   hint:'',    run: copyChatMarkdown },
+  { id:'export',  icon:'download', label:'Export chat as JSON',hint:'',    run: exportChat },
+  { id:'print',   icon:'print',    label:'Print conversation', hint:'P',   run: () => window.print() },
+  { id:'settings',icon:'settings', label:'Settings',           hint:',',   run: openSettings },
+  ...MODELS.map(m => ({ id:`model-${m.id}`, icon:'sparkles', label:`Switch to ${m.name}`, hint:'model', run: () => switchModel(m.id) })),
+];
+let paletteIndex = 0;
+let paletteFiltered = COMMANDS;
+
+function renderPalette() {
+  if (!paletteFiltered.length) {
+    els.paletteList.innerHTML = `<div class="px-3 py-8 text-center text-[13px] text-zinc-400">No commands found</div>`;
+    return;
+  }
+  els.paletteList.innerHTML = paletteFiltered.map((c, i) => `
+    <button data-cmd="${c.id}"
+            class="w-full flex items-center gap-3 px-3 py-2.5 rounded-xl text-left transition
+                   ${i === paletteIndex ? 'bg-fam-500/10 dark:bg-fam-500/[0.15]' : 'hover:bg-zinc-100 dark:hover:bg-white/[0.05]'}">
+      <span class="w-7 h-7 rounded-lg grid place-items-center bg-zinc-100 dark:bg-white/[0.06] text-zinc-500 dark:text-zinc-300">${ic(c.icon,'w-4 h-4')}</span>
+      <span class="flex-1 text-[13.5px] font-medium text-zinc-700 dark:text-slate-200">${c.label}</span>
+      ${c.hint ? `<kbd class="text-[10px] font-mono text-zinc-400 px-1.5 py-0.5 rounded bg-zinc-100 dark:bg-white/[0.06]">${c.hint}</kbd>` : ''}
+    </button>`).join('');
+}
+function openPalette() {
+  els.palette.classList.remove('hidden');
+  els.paletteInput.value = '';
+  paletteIndex = 0;
+  paletteFiltered = COMMANDS;
+  renderPalette();
+  setTimeout(() => els.paletteInput.focus(), 20);
+}
+function closePalette() { els.palette.classList.add('hidden'); }
+function runCommand(id) {
+  const cmd = COMMANDS.find(c => c.id === id);
+  closePalette();
+  if (cmd) setTimeout(() => cmd.run(), 60);
+}
+els.paletteInput.addEventListener('input', e => {
+  const q = e.target.value.toLowerCase();
+  paletteFiltered = COMMANDS.filter(c => c.label.toLowerCase().includes(q));
+  paletteIndex = 0;
+  renderPalette();
+});
+els.paletteList.addEventListener('click', e => {
+  const btn = e.target.closest('[data-cmd]');
+  if (btn) runCommand(btn.dataset.cmd);
+});
+$('#paletteBackdrop').addEventListener('click', closePalette);
+els.cmdkHint.addEventListener('click', openPalette);
+
+/* ═══════════════════════════════════════════════════════════
+   Global keyboard
+   ═══════════════════════════════════════════════════════════ */
+document.addEventListener('keydown', e => {
+  const mod = e.metaKey || e.ctrlKey;
+  const typing = ['INPUT', 'TEXTAREA'].includes(document.activeElement.tagName);
+
+  if (mod && e.key.toLowerCase() === 'k') {
+    e.preventDefault();
+    els.palette.classList.contains('hidden') ? openPalette() : closePalette();
+    return;
+  }
+  if (mod && e.key.toLowerCase() === 'f' && !typing) {
+    e.preventDefault();
+    openFind();
+    return;
+  }
+  if (mod && e.altKey && e.key.toLowerCase() === 'n') {
+    e.preventDefault();
+    newChat();
+    return;
+  }
+  if (!els.palette.classList.contains('hidden')) {
+    if (e.key === 'Escape') closePalette();
+    if (e.key === 'ArrowDown') {
+      e.preventDefault();
+      paletteIndex = Math.min(paletteIndex + 1, paletteFiltered.length - 1);
+      renderPalette();
+      els.paletteList.querySelectorAll('button')[paletteIndex]?.scrollIntoView({ block: 'nearest' });
+    }
+    if (e.key === 'ArrowUp') {
+      e.preventDefault();
+      paletteIndex = Math.max(paletteIndex - 1, 0);
+      renderPalette();
+      els.paletteList.querySelectorAll('button')[paletteIndex]?.scrollIntoView({ block: 'nearest' });
+    }
+    if (e.key === 'Enter' && paletteFiltered[paletteIndex]) {
+      e.preventDefault();
+      runCommand(paletteFiltered[paletteIndex].id);
+    }
+    return;
+  }
+
+  if (e.key === 'Escape') {
+    if (voiceModeOpen) { closeVoiceMode(); return; }
+    if (!els.findBar.classList.contains('hidden')) { closeFind(); return; }
+    if (currentDrawer) { closeDrawer(); return; }
+    if (document.body.classList.contains('zen')) { toggleZen(); return; }
+    closeSidebarMobile();
+    els.modelMenu.classList.add('hidden');
+    els.moreMenu.classList.add('hidden');
+    hideSlash();
+    return;
+  }
+
+  if (voiceModeOpen) return;
+  if (typing) return;
+
+  if (e.key === '?') { e.preventDefault(); openDrawer('shortcuts'); return; }
+  if (e.key.toLowerCase() === 'v' && !mod) { e.preventDefault(); openVoiceMode(); return; }
+  if (e.key.toLowerCase() === 'f' && !mod) { e.preventDefault(); toggleZen(); return; }
+  if (e.key.toLowerCase() === 't' && !mod) { e.preventDefault(); toggleTheme(); return; }
+  if (e.key.toLowerCase() === 'p' && !mod) { e.preventDefault(); window.print(); return; }
+  if (e.key === ',') { e.preventDefault(); openSettings(); return; }
+
+  if (!mod && e.key.length === 1) els.input.focus();
+});
+
+document.addEventListener('visibilitychange', () => {
+  if (!document.hidden) document.title = 'FAMASSER Intelligence — Fami';
+});
+
+/* Simulated latency ticker */
+setInterval(() => {
+  if (!offline) els.latText.textContent = (9 + Math.floor(Math.random() * 9)) + ' ms';
+}, 3000);
+
+/* ═══════════════════════════════════════════════════════════
+   Boot
+   ═══════════════════════════════════════════════════════════ */
+function seedChats() {
+  const c1 = { id: uid(), title: 'New conversation', pinned: false, time: 'now', messages: [] };
+  const mk = (demo, userQ, title, time, pinned = false) => ({
+    id: uid(), title, pinned, time,
+    messages: [
+      { id: uid(), role: 'user', content: userQ },
+      { id: uid(), role: 'assistant', content: demo.content, face: 'success',
+        sql: demo.sql, meta: demo.meta, chart: demo.chart,
+        followups: demo.followups, stepsDone: REASONING_STEPS.length, modelName: 'Fami' },
+    ],
+  });
+  return [
+    c1,
+    mk(DEMO_RESPONSES[0], 'Which products are currently low in stock or out of stock?', 'Inventory · low stock check', '2h', true),
+    mk(DEMO_RESPONSES[1], 'Show me today\u2019s sales figures compared to yesterday.', 'Sales · today vs. yesterday', '1d'),
+    mk(DEMO_RESPONSES[2], 'List our top 10 customers by purchase volume this month.', 'Customers · top buyers this month', '3d'),
+  ];
+}
+
+function init() {
+  const saved = store.load();
+  applyTheme(settings.theme);
+  applyFontSize();
+
+  els.brandFace.innerHTML = famiFace({ size: 36, state: 'idle' });
+  els.headerFace.innerHTML = famiFace({ size: 30, state: 'idle' });
+  syncSapNavDot();
+
+  if (saved && Array.isArray(saved.chats) && saved.chats.length) {
+    state.chats = saved.chats;
+    state.activeId = saved.chats.some(c => c.id === saved.activeId) ? saved.activeId : saved.chats[0].id;
+  } else {
+    state.chats = seedChats();
+    state.activeId = state.chats[0].id;
+    state.stats = { queries: 3, messages: 7 };
+  }
+
+  renderSidebar();
+  renderMessages();
+  renderAttachments();
+  syncComposer();
+  setFamiStatus('idle');
+
+  const chat = activeChat();
+  if (chat && !chat.messages.length && !localStorage.getItem('famasser.greeted.v2')) {
+    try { localStorage.setItem('famasser.greeted.v2', '1'); } catch (_) {}
+    setTimeout(() => {
+      const c = activeChat();
+      if (c && !c.messages.length) {
+        c.messages.push({
+          id: uid(), role: 'assistant', modelName: 'Fami', stepsDone: REASONING_STEPS.length,
+          face: 'success',
+          content: "**Hi, I'm Fami.**\n\nYour AI assistant for FAMASSER. I help you explore business data — products, inventory, sales, purchases, customers and suppliers.\n\nAsk a question below, drop files anywhere, or press `?` to see what I can do. Every answer ships with its **SQL**, **results** and a full trace of how I found it — I never invent business data.",
+        });
+        renderMessages(true);
+        store.save();
+        sfx.receive();
+      }
+    }, 400);
+  }
+
+  els.input.focus();
+}
+
+init();
+</script>
+</body>
+</html>
